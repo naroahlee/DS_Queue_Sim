@@ -10,10 +10,6 @@ import sys
 # Plot Global Parameter
 gXLIM = 20
 
-def usage():
-	print "plot_dist.py [Arrival_Rate] [Service_Rate] [Result File]"
-	return
-
 def read_data(infile):
 	arrival_evt  = []
 	atserver_evt = []
@@ -27,16 +23,12 @@ def read_data(infile):
 			leave_evt.append(float(row[2]))
 	return (arrival_evt, atserver_evt, leave_evt)
 
-def plot_curves(empr_curve, theo_curve):
+def plot_curves(x_axis, y_theos):
 	#figwidth  = 3.5
 	#figheight = 2.8
-	figwidth  = 8
-	figheight = 6
+	figwidth  = 4
+	figheight = 3
 	plt.figure(figsize=(figwidth, figheight))
-
-
-	(x_empr, y_empr) = empr_curve
-	(x_theo, y_theo) = theo_curve
 
 
 	# Disable The Frame
@@ -45,14 +37,22 @@ def plot_curves(empr_curve, theo_curve):
 	spinelist[3].set_visible(False)
 
 	# Don't Clip_on
-	plt.subplots_adjust(left=0.18,top=0.95, bottom=0.18)
-	plt.plot(x_empr, y_empr, linestyle='-',  color='blue',  drawstyle='steps', clip_on=False, linewidth=2.0)
-	plt.plot(x_theo, y_theo, linestyle='--', color='black', drawstyle='steps', clip_on=False, linewidth=2.0)
+	plt.subplots_adjust(left=0.18,top=0.9, bottom=0.2)
+
+	for y_item in y_theos:
+		plt.plot(x_axis, y_item, linestyle='-', drawstyle='steps', clip_on=False, linewidth=2.0)
 	plt.xlabel('Response Time (s)', fontsize = 12)
 	plt.ylabel('Proportion', fontsize = 12)
+	plt.title('M/D/1 Response Time CDF,' + u'\u03BC' + ' = 1.0')
 	plt.xlim([0, gXLIM])
 	plt.ylim([0, 1.0])
-	plt.legend(['Emprical', 'Theoretical'])
+
+	legend_sym = []
+	for value in np.linspace(0.1, 0.9, 5):
+		item = u'\u03BB' + ' = %.1f' % (value) 	
+		legend_sym.append(item)
+
+	plt.legend(legend_sym)
 	plt.show()
 	return
 
@@ -78,33 +78,17 @@ def MD1_response_CDF(arrival_rate, service_rate, t):
 
 
 # ==================== Main ==============================
-if (len(sys.argv) != 4):
-	usage()
-	sys.exit(-1)
 
-arrival_rate = float(sys.argv[1])
-service_rate = float(sys.argv[2])
-infile       = sys.argv[3]
-
-# Read Data
-(arrival_evt, atserver_evt, leave_evt) = read_data(infile)
-
-# Figure out Response Time
-response_time = []
-for index in range(0, len(arrival_evt)):
-	delta = leave_evt[index] - arrival_evt[index]
-	response_time.append(delta)
-
-# Draw
-
-# Generate Empirical Curve
-x_axis = np.linspace(0, gXLIM, 10000)
-ecdf = sm.distributions.ECDF(response_time);
-y_empr = ecdf(x_axis);
 # Generate Theoretical Curve
-y_theo = []
-for item in x_axis:
-	value = MD1_response_CDF(arrival_rate, service_rate, item)
-	y_theo.append(value)
+x_axis  = np.linspace(0, gXLIM, 10000)
+y_theos = []
 
-plot_curves((x_axis, y_empr), (x_axis, y_theo))
+service_rate = 1.0
+for arrival_rate in np.linspace(0.1, 0.9, 5):
+	y_temp = []
+	for item in x_axis:
+		value = MD1_response_CDF(arrival_rate, service_rate, item)
+		y_temp.append(value)
+	y_theos.append(y_temp)
+
+plot_curves(x_axis, y_theos)

@@ -1,7 +1,7 @@
 #!/bin/bash
-ArrivalRate=0.9
+ArrivalRate=0.5
 ServiceRate=1.0
-SampleNum=100000
+SampleNum=10000
 InName=./data/input/poisson01.csv
 OutName=./data/output/poisson01.csv
 ./gen_poisson.py ${ArrivalRate} ${SampleNum} ${InName}
