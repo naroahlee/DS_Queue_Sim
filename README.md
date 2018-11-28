@@ -2,3 +2,5 @@
 181127: 
 	Add M/D/1 theoretical control parameter experiment in ./src
 	M/D(DS)/1 implementation finished. Recursive Sanity Check Passed
+181128:
+	Reconstruct the code base
