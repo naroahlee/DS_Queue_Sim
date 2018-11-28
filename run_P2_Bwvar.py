@@ -16,6 +16,7 @@ sample_num   = 10000
 
 # For D_FIFO_DS server
 service_rate = 1.0
+period       = 2.0
 
 # Figure Plot Parameter
 ecdf_samples = 10000
@@ -23,26 +24,20 @@ x_lim = 20.0
 y_lim = 1.0
 xy_lim = (x_lim, y_lim)
 
-# Logs
-processfile  = './data/input/run01.csv'
-resultfile   = './data/output/run01.csv'
-
-
 #=============== Simulation ================
 
 # Generate Emprical Samples
 arrival_evt = gen_poisson_process(arrival_rate, sample_num)
 # Stimulate the server
-(atserver_evt, leave_evt) = run_D_FIFO_server(service_rate, arrival_evt)
 
-#============ Post Processing ==============
-# Figure out Response Time
-response_time = np.subtract(leave_evt, arrival_evt)
-
-# Generate Empirical Curve
 x_axis = np.linspace(0, x_lim, ecdf_samples)
-ecdf = sm.distributions.ECDF(response_time);
-y_empr = ecdf(x_axis);
+y_curves = []
+for budget in [1.2, 1.4, 1.6, 1.8, 2.0]:
+	(atserver_evt, leave_evt) = run_D_FIFO_DS_server(budget, period, service_rate, arrival_evt)
+	response_time = np.subtract(leave_evt, arrival_evt)
+	ecdf = sm.distributions.ECDF(response_time);
+	y_empr = ecdf(x_axis);
+	y_curves.append(y_empr)
 
 # Generate Theoretical Curve
 y_theo = []
@@ -50,12 +45,6 @@ for item in x_axis:
 	value = MD1_response_CDF(arrival_rate, service_rate, item)
 	y_theo.append(value)
 
-plot_curves_with_same_x(x_axis, [y_empr, y_theo], ['Deferrable Server Sim', 'M/D/1 Theoretical'], xy_lim, 'Title')
+y_curves.append(y_theo)
 
-# Record the process for later usage
-write_arrival_data(processfile, arrival_evt)
-write_trace_data(resultfile, arrival_evt, atserver_evt, leave_evt)
-
-
- 
-
+plot_curves_with_same_x(x_axis, y_curves, ['Bw=60%', 'Bw=70%', 'Bw=80%', 'Bw=90%', 'Bw=100%', 'M/D/1 Theoretical'], xy_lim, u'M/D(DS)/1, P=2.0, \u03BB=0.5, \u03BC=1.0')

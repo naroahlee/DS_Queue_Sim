@@ -52,7 +52,7 @@ for item in x_axis:
 	value = MD1_response_CDF(arrival_rate, service_rate, item)
 	y_theo.append(value)
 
-plot_curves_with_same_x(x_axis, [y_empr, y_theo], ['Deferrable Server Sim', 'M/D/1 Theoretical'], xy_lim)
+plot_curves_with_same_x(x_axis, [y_empr, y_theo], ['Deferrable Server Sim', 'M/D/1 Theoretical'], xy_lim, 'Title')
 
 # Record the process for later usage
 write_arrival_data(processfile, arrival_evt)

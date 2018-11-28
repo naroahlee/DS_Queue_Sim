@@ -16,7 +16,7 @@ sample_num   = 10000
 
 # For D_FIFO_DS server
 service_rate = 1.0
-period       = 2.0
+bandwidth    = 0.6
 
 # Figure Plot Parameter
 ecdf_samples = 10000
@@ -32,7 +32,8 @@ arrival_evt = gen_poisson_process(arrival_rate, sample_num)
 
 x_axis = np.linspace(0, x_lim, ecdf_samples)
 y_curves = []
-for budget in [1.2, 1.4, 1.6, 1.8, 2.0]:
+for period in [0.5, 1.0, 5.0, 10, 50]:
+	budget = period * bandwidth
 	(atserver_evt, leave_evt) = run_D_FIFO_DS_server(budget, period, service_rate, arrival_evt)
 	response_time = np.subtract(leave_evt, arrival_evt)
 	ecdf = sm.distributions.ECDF(response_time);
@@ -47,4 +48,4 @@ for item in x_axis:
 
 y_curves.append(y_theo)
 
-plot_curves_with_same_x(x_axis, y_curves, ['B=1.2', 'B=1.4', 'B=1.6', 'B=1.8', 'B=2.0', 'M/D/1 Theoretical'], xy_lim)
+plot_curves_with_same_x(x_axis, y_curves, ['P=0.5', 'P=1.0', 'P=5.0', 'P=10.0', 'P=50.0', 'M/D/1 Theoretical'], xy_lim, u'M/D(DS)/1, Bw=60%, \u03BB=0.5, \u03BC=1.0')

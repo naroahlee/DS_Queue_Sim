@@ -2,11 +2,11 @@
 import matplotlib.pyplot as plt
 import csv
 
-def plot_curves_with_same_x(x_axis, y_curves, legends, xy_lim):
+def plot_curves_with_same_x(x_axis, y_curves, legends, xy_lim, fig_title):
 	#figwidth  = 3.5
 	#figheight = 2.8
-	figwidth  = 8
-	figheight = 6
+	figwidth  = 4
+	figheight = 3
 	plt.figure(figsize=(figwidth, figheight))
 
 	# Disable The Frame
@@ -15,13 +15,14 @@ def plot_curves_with_same_x(x_axis, y_curves, legends, xy_lim):
 	spinelist[3].set_visible(False)
 
 	# Don't Clip_on
-	plt.subplots_adjust(left=0.18,top=0.95, bottom=0.18)
+	plt.subplots_adjust(left=0.18,top=0.90, bottom=0.2)
 
 	for y_curve in y_curves:
 		plt.plot(x_axis, y_curve, linestyle='-', drawstyle='steps', clip_on=False, linewidth=2.0)
 
 	plt.xlabel('Response Time (s)', fontsize = 12)
 	plt.ylabel('Proportion', fontsize = 12)
+	plt.title(fig_title, fontsize = 12)
 
 	(x_lim, y_lim) = xy_lim
 	plt.xlim([0, x_lim])
