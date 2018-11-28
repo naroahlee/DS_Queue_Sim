@@ -1,9 +1,10 @@
 #!/usr/bin/python
 # Compare Exponential CDF between Theoretical and Emprical
-import matplotlib.pyplot as plt
-import numpy as np
-import csv
 import sys
+import numpy as np
+from lib.utils import *
+
+
 
 def usage():
 	print "gen_possion.py [Rate] [#Sample] [Filename]"
@@ -21,7 +22,6 @@ def gen_poisson_process(arrival_rate, sample_num):
 
 	return arrival_evt
 
-
 # ================= Main ===================
 
 if (len(sys.argv) != 4):
@@ -35,9 +35,7 @@ filename     = sys.argv[3]
 # Generate Emprical Samples
 arrival_evt = gen_poisson_process(arrival_rate, sample_num)
 
-# Save to CSV
-with open(filename, 'w') as outfile:
-	for item in arrival_evt:
-		outfile.write('%f\n' % (item))
+write_arrival_data(filename, arrival_evt)
+
  
 

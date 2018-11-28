@@ -1,22 +1,12 @@
 #!/usr/bin/python
 # Compare Exponential CDF between Theoretical and Emprical
-import matplotlib.pyplot as plt
-import numpy as np
-import csv
 import sys
+import numpy as np
+from lib.utils import *
 
 def usage():
 	print "MD1_sim.py [Service_Rate] [Input File] [Out File]"
 	return
-
-def read_arrival_data(infile):
-	arrival_evt = []
-	with open(infile, 'rb') as csvfile:
-		myreader = csv.reader(csvfile, delimiter=',', quotechar='|')
-		for row in myreader:
-			for item in row:
-				arrival_evt.append(float(item));
-	return arrival_evt
 
 # Deterministic Server
 def run_MD1_server(service_rate, arrival_evt):
@@ -60,11 +50,4 @@ arrival_evt = read_arrival_data(infile)
 (atserver_evt, leave_evt) = run_MD1_server(service_rate, arrival_evt)
 
 # Save Event
-with open(outfile, 'w') as outfile:
-	for index in range(0, len(arrival_evt)):
-		outfile.write('%f,%f,%f\n' % (arrival_evt[index], atserver_evt[index], leave_evt[index]))
-
-
-
-
-
+write_trace_data(outfile, arrival_evt, atserver_evt, leave_evt)

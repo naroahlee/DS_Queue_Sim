@@ -1,14 +1,15 @@
 #!/usr/bin/python
-# Compare Exponential CDF between Theoretical and Emprical
+# Deferrable Server Parameter Control Test
 import matplotlib.pyplot as plt
 import numpy as np
 import math
 import csv
 import sys
-from lib.utils import *
+from md1_cdf import MD1_Response_CDF
 
 def usage():
-	print "MD1_sim.py [Service_Rate] [Budget] [Period] [Input File] [Out File]"
+	print "MD1_DS_multisim.py [Arrival_Rate] [Service_Rate] [Input File]"
+	print "lambda and mu for Theoretical Plot"
 	return
 
 # Everytime when execute or idle for sometime, we need to update the status of DS
@@ -77,20 +78,22 @@ def run_MD1_DS_server(budget, period, service_rate, arrival_evt):
 
 # ================= Main ===================
 
-if (len(sys.argv) != 6):
+if (len(sys.argv) != 4):
 	usage()
 	sys.exit(-1)
 
-service_rate = float(sys.argv[1])
-budget       = float(sys.argv[2])
-period       = float(sys.argv[3])
-infile       =       sys.argv[4]
-outfile      =       sys.argv[5]
+arrival_rate = float(sys.argv[1])
+service_rate = float(sys.argv[2])
+infile       =       sys.argv[3]
 
 # Read Arrival Event
 arrival_evt = read_arrival_data(infile)
 
+allleave_evt = []
 # Run Simluation
-(atserver_evt, leave_evt) = run_MD1_DS_server(budget, period, service_rate, arrival_evt)
-# Save Event
-write_trace_data(outfile, arrival_evt, atserver_evt, leave_evt)
+period = 1.0
+for budget in [0.6, 0.7, 0.8, 0.9, 1.0]:
+	(atserver_evt, leave_evt) = run_MD1_DS_server(budget, period, service_rate, arrival_evt)
+	response_time = np.subtract(leave_evt, arrival_evt)
+	allleave_evt.append(response_time)
+
