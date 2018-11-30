@@ -11,3 +11,5 @@
 
 	run_P2_Bwvar.py : Run MDDS1 system multiple times, with a constant P,  while varying Bw
 	run_Bw60_Pvar.py: Run MDDS1 system multiple times, with a constant Bw, while varying P
+181130:
+	Implement the Periodic Server, for DS_worst simluation

@@ -17,8 +17,13 @@ def plot_curves_with_same_x(x_axis, y_curves, legends, xy_lim, fig_title):
 	# Don't Clip_on
 	plt.subplots_adjust(left=0.18,top=0.90, bottom=0.2)
 
+	index = 0
 	for y_curve in y_curves:
-		plt.plot(x_axis, y_curve, linestyle='-', drawstyle='steps', clip_on=False, linewidth=2.0)
+		if(0 == index):
+			plt.plot(x_axis, y_curve, linestyle='-', color='black', drawstyle='steps', clip_on=False, linewidth=2.8)
+		else:
+			plt.plot(x_axis, y_curve, linestyle='--', drawstyle='steps', clip_on=False, linewidth=2.0)
+		index += 1
 
 	plt.xlabel('Response Time (s)', fontsize = 12)
 	plt.ylabel('Proportion', fontsize = 12)

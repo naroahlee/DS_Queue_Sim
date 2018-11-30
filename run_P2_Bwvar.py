@@ -24,21 +24,9 @@ x_lim = 20.0
 y_lim = 1.0
 xy_lim = (x_lim, y_lim)
 
-#=============== Simulation ================
-
-# Generate Emprical Samples
-arrival_evt = gen_poisson_process(arrival_rate, sample_num)
-# Stimulate the server
-
 x_axis = np.linspace(0, x_lim, ecdf_samples)
+#=============== Simulation ================
 y_curves = []
-for budget in [1.2, 1.4, 1.6, 1.8, 2.0]:
-	(atserver_evt, leave_evt) = run_D_FIFO_DS_server(budget, period, service_rate, arrival_evt)
-	response_time = np.subtract(leave_evt, arrival_evt)
-	ecdf = sm.distributions.ECDF(response_time);
-	y_empr = ecdf(x_axis);
-	y_curves.append(y_empr)
-
 # Generate Theoretical Curve
 y_theo = []
 for item in x_axis:
@@ -47,4 +35,16 @@ for item in x_axis:
 
 y_curves.append(y_theo)
 
-plot_curves_with_same_x(x_axis, y_curves, ['Bw=60%', 'Bw=70%', 'Bw=80%', 'Bw=90%', 'Bw=100%', 'M/D/1 Theoretical'], xy_lim, u'M/D(DS)/1, P=2.0, \u03BB=0.5, \u03BC=1.0')
+# Generate Emprical Samples
+arrival_evt = gen_poisson_process(arrival_rate, sample_num)
+# Stimulate the server
+
+for budget in [1.2, 1.4, 1.6, 1.8, 2.0]:
+	(atserver_evt, leave_evt) = run_D_FIFO_DS_server(budget, period, service_rate, arrival_evt)
+	response_time = np.subtract(leave_evt, arrival_evt)
+	ecdf = sm.distributions.ECDF(response_time);
+	y_empr = ecdf(x_axis);
+	y_curves.append(y_empr)
+
+
+plot_curves_with_same_x(x_axis, y_curves, ['M/D/1 Theoretical', 'Bw=60%', 'Bw=70%', 'Bw=80%', 'Bw=90%', 'Bw=100%'], xy_lim, u'M/D(DS)/1, P=2.0, \u03BB=0.5, \u03BC=1.0')
