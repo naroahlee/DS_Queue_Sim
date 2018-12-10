@@ -51,16 +51,24 @@ response_time = np.subtract(leave_evt, arrival_evt)
 ecdf2 = sm.distributions.ECDF(response_time);
 y_empr_ps = ecdf2(x_axis);
 
+
+
 # Generate Theoretical Curve
 y_theo = []
 for item in x_axis:
 	value = MD1_response_CDF(arrival_rate, service_rate, item)
 	y_theo.append(value)
 
-#mytitle = u'\u03BB=0.5, \u03BC=1.0'
+# Generate Theoretical Curve M/D/1 nerf
+y_theo_l = []
+for item in x_axis:
+	value = MD1_response_CDF(arrival_rate, service_rate * bandwidth, item)
+	y_theo_l.append(value)
+
+#mytitle = u'P=2.0, Bw=65%, \u03BB=0.5, \u03BC=1.0'
 mytitle = "P=%.1f, Bw=%2d%%, %c=%.1f, %c=%.1f" % (period, int(bandwidth * 100), u'\u03BB', arrival_rate, u'\u03BC', service_rate)
 
 #plot_curves_with_same_x(x_axis, [y_theo], ['M/D/1 Theoretical'], xy_lim, mytitle)
 #plot_curves_with_same_x(x_axis, [y_theo, y_empr_ds], ['M/D/1 Theoretical', 'M/D(DS)/1 Best'], xy_lim, mytitle)
-plot_curves_with_same_x(x_axis, [y_theo, y_empr_ds, y_empr_ps], ['M/D/1 Theoretical', 'M/D(DS)/1 Best', 'M/D(DS)/1 Worst'], xy_lim, mytitle)
+plot_curves_with_same_x(x_axis, [y_theo, y_empr_ds, y_empr_ps, y_theo_l], ['M/D/1 Theoretical', 'M/D(DS)/1', 'M/D(PS)/1', 'M/D/1 nerf'], xy_lim, mytitle)
 
