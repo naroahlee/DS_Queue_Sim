@@ -21,6 +21,16 @@ def plot_curves_with_same_x(x_axis, y_curves, legends, xy_lim, fig_title):
 	for y_curve in y_curves:
 		if(0 == index):
 			plt.plot(x_axis, y_curve, linestyle='-', color='black', drawstyle='steps', clip_on=False, linewidth=2.8)
+		elif(1 == index):
+			plt.plot(x_axis, y_curve, linestyle='-', color='grey', drawstyle='steps', clip_on=False, linewidth=2.8)
+		elif(2 == index):
+			plt.plot(x_axis, y_curve, linestyle='-', color='sienna', drawstyle='steps', clip_on=False, linewidth=2.8)
+		elif(3 == index):
+			plt.plot(x_axis, y_curve, linestyle='--', color='orange', drawstyle='steps', clip_on=False, linewidth=2.0)
+		elif(4 == index):
+			plt.plot(x_axis, y_curve, linestyle='--', color='blue', drawstyle='steps', clip_on=False, linewidth=2.0)
+		elif(5 == index):
+			plt.plot(x_axis, y_curve, linestyle='--', color='green', drawstyle='steps', clip_on=False, linewidth=2.0)
 		else:
 			plt.plot(x_axis, y_curve, linestyle='--', drawstyle='steps', clip_on=False, linewidth=2.0)
 		index += 1
