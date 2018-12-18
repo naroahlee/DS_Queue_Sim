@@ -11,13 +11,14 @@ from lib.md1_cdf import MD1_response_CDF
 
 # ================Parameters ===============
 # For Poisson Process
-arrival_rate = 0.5
-sample_num   = 10000
+arrival_rate = 0.2
+sample_num   = 4000
 
 # For D_FIFO_DS server
 service_rate = 1.0
-budget       = 1.5
-period       = 2.0
+bandwidth    = 0.35
+period       = 1.0
+budget       = bandwidth * period
 
 # Figure Plot Parameter
 ecdf_samples = 10000
@@ -26,8 +27,8 @@ y_lim = 1.0
 xy_lim = (x_lim, y_lim)
 
 # Logs
-processfile  = './data/input/run01.csv'
-resultfile   = './data/output/run01.csv'
+processfile  = './data/input/run02.csv'
+resultfile   = './data/output/run02.csv'
 
 
 #=============== Simulation ================

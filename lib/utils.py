@@ -5,8 +5,8 @@ import csv
 def plot_curves_with_same_x(x_axis, y_curves, legends, xy_lim, fig_title):
 	#figwidth  = 3.5
 	#figheight = 2.8
-	figwidth  = 4
-	figheight = 3
+	figwidth  = 6
+	figheight = 5
 	plt.figure(figsize=(figwidth, figheight))
 
 	# Disable The Frame
@@ -26,9 +26,9 @@ def plot_curves_with_same_x(x_axis, y_curves, legends, xy_lim, fig_title):
 		elif(2 == index):
 			plt.plot(x_axis, y_curve, linestyle='-', color='sienna', drawstyle='steps', clip_on=False, linewidth=2.8)
 		elif(3 == index):
-			plt.plot(x_axis, y_curve, linestyle='--', color='orange', drawstyle='steps', clip_on=False, linewidth=2.0)
-		elif(4 == index):
 			plt.plot(x_axis, y_curve, linestyle='--', color='blue', drawstyle='steps', clip_on=False, linewidth=2.0)
+		elif(4 == index):
+			plt.plot(x_axis, y_curve, linestyle='--', color='orange', drawstyle='steps', clip_on=False, linewidth=2.0)
 		elif(5 == index):
 			plt.plot(x_axis, y_curve, linestyle='--', color='green', drawstyle='steps', clip_on=False, linewidth=2.0)
 		else:
