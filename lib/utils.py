@@ -22,9 +22,9 @@ def plot_curves_with_same_x(x_axis, y_curves, legends, xy_lim, fig_title):
 		if(0 == index):
 			plt.plot(x_axis, y_curve, linestyle='-', color='black', drawstyle='steps', clip_on=False, linewidth=2.8)
 		elif(1 == index):
-			plt.plot(x_axis, y_curve, linestyle='-', color='grey', drawstyle='steps', clip_on=False, linewidth=2.8)
+			plt.plot(x_axis, y_curve, linestyle='-', color='orange', drawstyle='steps', clip_on=False, linewidth=2.8)
 		elif(2 == index):
-			plt.plot(x_axis, y_curve, linestyle='-', color='sienna', drawstyle='steps', clip_on=False, linewidth=2.8)
+			plt.plot(x_axis, y_curve, linestyle='--', color='blue', drawstyle='steps', clip_on=False, linewidth=1.8)
 		elif(3 == index):
 			plt.plot(x_axis, y_curve, linestyle='--', color='blue', drawstyle='steps', clip_on=False, linewidth=2.0)
 		elif(4 == index):

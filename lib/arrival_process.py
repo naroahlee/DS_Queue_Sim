@@ -17,3 +17,18 @@ def gen_poisson_process(arrival_rate, sample_num):
 		arrival_evt.append(cur_time)
 
 	return arrival_evt
+
+# ============= Bernoulli Process ===================
+# Parameters:
+# arrival possibility in a slot: p
+
+def gen_bernoulli_process(p, sample_num):
+	alldata = np.random.geometric(p, sample_num)
+
+	arrival_evt = []
+	cur_time = 0
+	for evt in alldata:
+		cur_time += evt
+		arrival_evt.append(cur_time)
+
+	return arrival_evt

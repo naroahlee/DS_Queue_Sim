@@ -11,8 +11,8 @@ from lib.md1_cdf import MD1_response_CDF
 
 # ================Parameters ===============
 # For Poisson Process
-arrival_rate = 0.2
-sample_num   = 4000
+arrival_rate = 0.5
+sample_num   = 10000
 
 # For D_FIFO_DS server
 service_rate = 1.0
