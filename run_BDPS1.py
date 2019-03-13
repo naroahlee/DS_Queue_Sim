@@ -8,7 +8,7 @@ from lib.utils           import *
 from lib.arrival_process import *
 from lib.server_model    import *
 from lib.md1_cdf import MD1_response_CDF
-from lib.analytics import get_BD1_Vx_at_nP
+from lib.analytics import get_BD1_V0
 
 # ================Parameters ===============
 # For Bernoulli Process
@@ -19,8 +19,8 @@ sample_num   = 100000
 service_dur = 1
 
 # Server:
-budget = 2
-period = 3
+budget = 3
+period = 5
 
 # Logs
 processfile  = './data/input/run01.csv'
@@ -52,16 +52,20 @@ while(index < len(arrival_evt)):
 	next_period += period
 
 #print queuing_proc
-cnt = [0] * 10
+cnt = [0] * 20
 for item in queuing_proc:
 	if (item < 20):
 		cnt[item] += 1
 
-pi_j = get_BD1_Vx_at_nP(budget, period, p)
+pi_j = get_BD1_V0(budget, period, p)
 
 print "         Simulation   Analytical(Numerical)"
 for i in range(0, len(cnt)):
 	print "pi%2d = %12.8f   %12.8f" % (i, 100.0 * cnt[i] / len(queuing_proc), 100.0 * pi_j[i])
+
+
+#for i in range(0, 10):
+#	print "pi%2d/pi%2d = %12.8f" % (i+1, i, (float(cnt[i+1]) / cnt[i]))
 
 
 

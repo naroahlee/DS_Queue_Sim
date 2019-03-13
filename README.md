@@ -33,4 +33,9 @@
 	E.g. A customer arrivals at 7th slot, and service time is 2:
          The customer arrives at time 7+, and leaves at time 9-. 
 
+190313:
+	B/D/1 (DS) analytical solution finished
+               response time distribution can be found with analytical method.
+               and that meets our expectation
+
 

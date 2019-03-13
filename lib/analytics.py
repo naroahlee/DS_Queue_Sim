@@ -3,9 +3,10 @@ import numpy as np
 import copy
 from scipy.special import comb
 
-def get_BD1_Vx_at_nP(B, P, prob):
+def get_BD1_V0(B, P, prob, J=5):
 	assert(int(B) == B)
 	assert(int(P) == P)
+	assert(int(J) == J)
 	assert(prob <= 1.0 and prob >= 0)
 	assert(prob * float(P) <= B)
 
@@ -48,6 +49,7 @@ def get_BD1_Vx_at_nP(B, P, prob):
 	#         P-B   item:  z=1
 	# P-B+1 ~ P-1   item:  roots inside unit circle
 	eq_roots = np.concatenate((ex_roots, [1.0], in_roots))
+
 
 	#print eq_roots
 
@@ -94,7 +96,7 @@ def get_BD1_Vx_at_nP(B, P, prob):
 	pi_B = (pi_j[0] - term1) / alpha_h[0]
 	pi_j = np.concatenate((pi_j, [pi_B]))
 
-	# Step4.1 Compute pi_{B+1} to pi_{P-B-1}
+	# Step 4.1 Compute pi_{B+1} to pi_{P-B-1}
 	for j in range(1, P - B):
 		term1 = 0.0
 		for h in range(0, B + j):
@@ -103,7 +105,7 @@ def get_BD1_Vx_at_nP(B, P, prob):
 		pi_j   = np.concatenate((pi_j, [pi_jpB]))
 		
 
-	for j in range(P - B, 10):
+	for j in range(P - B, 20):
 		term1 = 0.0
 		for h in range(0, P):
 			term1 += pi_j[j - P + B + h] * alpha_h[P - h]
@@ -111,7 +113,87 @@ def get_BD1_Vx_at_nP(B, P, prob):
 		pi_j   = np.concatenate((pi_j, [pi_jpB]))
 
 
-	#print eq_roots
-	#print np.abs(pi_j) 
-	return np.abs(pi_j)
+	pi_j = np.real(pi_j)
 
+	# Step 4.3 Using GT method to correct the tail
+	# Adopt the tail method:
+	
+	# Get the dominate root:
+	q = 1.0 / np.min(np.abs(ex_roots))
+	pi_0toJm1 = sum(pi_j[0:J])
+
+	#print "q= %f" % (q)
+	#print "sum pi[0 to J-1] = %f" % (pi_0toJm1)
+
+	# Truncate Pi, then figure out Pi_J
+	pi_j = pi_j[0:J]
+	pi_J = (1.0 - q) * (1.0 - pi_0toJm1)	
+	pi_j = np.concatenate((pi_j, [pi_J]))
+
+	# Using Geometric Tail
+	for i in range(J + 1, 20):
+		new_item = pi_j[i - 1] * q
+		pi_j = np.concatenate((pi_j, [new_item]))
+		
+	return pi_j
+
+def get_BD1_PS_Vn(B, P, p, V0):
+	m = len(V0)
+	Vn = np.zeros((P, m))
+	Vn[0] = V0
+
+	for n in range(1, P):
+		# Compute Off-slot
+		if(n <= (P - B)):
+			Vn[n][0] = Vn[n-1][0] * (1.0 - p)
+			for i in range(1, m):
+				Vn[n][i] = Vn[n-1][i-1] * p + Vn[n-1][i] * (1.0-p)
+		else:
+		# Compute On-slot
+			Vn[n][0] = Vn[n-1][0] + Vn[n-1][1] * (1.0 - p)
+			for i in range(1, m - 1):
+				Vn[n][i] = Vn[n - 1][i] * p + Vn[n-1][i + 1] * (1.0-p)
+	return Vn
+
+# Not useful
+def get_BD1_PS_V(Vn):
+	(P, m) = Vn.shape
+
+	V = np.zeros(m)
+	for i in range(0, m):
+		V[i] = 0.0
+		for n in range(0, P):
+			V[i] += Vn[n][i]
+		V[i] = V[i] / float(P)
+
+	return V
+
+def get_BD1_PS_R(B, P, Vn):
+	(P1, m) = Vn.shape
+	R = np.zeros(100)
+	for n in range(0, P):
+		for i in range(0, m):
+			# Off-slot
+			if(n < (P-B)):
+				#   Replenish Time          + Execution Time + First Period Offset
+				if( 0 == (i + 1) % B):
+					k = (((i + 1) / B )    * (P - B)) + (i + 1) - n
+				else:
+					k = (((i + 1) / B + 1) * (P - B)) + (i + 1) - n
+
+				R[k] += (1.0 / P) * Vn[n][i]
+			# On-slot
+			else:
+				if (0 == ((i + 1) - (P - n)) % B):
+					k = (((i + 1) - (P - n)) / B)
+				else:
+					k = (((i + 1) - (P - n)) / B + 1)
+				
+				k = k * (P - B)
+				k = k + (i + 1)
+				if(k == 1):
+					print "n=%d, i=%d" % (n,i)
+				R[k] += (1.0 / P) * Vn[n][i]
+			
+
+	return R
