@@ -20,8 +20,8 @@ p = 0.5
 service_dur = 1
 
 # Server:
-budget = 4
-period = 7
+budget = 12
+period = 20
 
 # Step 1. Get Virtual Waiting time distribution @ Start of a period (P + 0)
 V0 = get_BD1_V0(budget, period, p)
@@ -29,7 +29,7 @@ V0 = get_BD1_V0(budget, period, p)
 Vn = get_BD1_PS_Vn(budget, period, p, V0)
 
 
-print Vn
+#print Vn
 
 R  = get_BD1_PS_R(budget, period, Vn)
 
@@ -60,7 +60,7 @@ for item in response_sim:
 cnt = np.array(cnt)
 dist = (cnt) / float(len(response_sim))
 
-print dist
+#print dist
 
 
 
@@ -71,9 +71,11 @@ y_pos = np.array(range(0, len(response_aly)))
 
 plt.bar(y_pos - 0.2, response_aly, width=0.4, align='center', alpha=0.5)
 plt.bar(y_pos + 0.2, dist, width=0.4, align='center', alpha=0.5)
-plt.legend(['Analytical', 'Simulation'])
+plt.legend(['Analytics', 'Simulation'])
 plt.xticks(range(0, 21))
 plt.xlabel('Response Time (Time Unit)')
 plt.ylabel('Probability (Frequency)')
 plt.xlim([0, 20])
+mytitle = 'P=%d, B=%d, %c=%3.2f' % (period, budget, u'\u03B7', p)
+plt.title(mytitle)
 plt.show()

@@ -2,6 +2,74 @@
 import numpy as np
 import copy
 from scipy.special import comb
+from fractions import gcd
+
+def int_frac_ceil(N, D):
+	assert(int(N) == N)
+	assert(int(D) == D)
+
+	if(0 == N % D):
+		return (N / D)
+	else:
+		return ((N / D) + 1)
+
+# A optimized version of getting roots
+# Will use gcd(B, P) to simplify the computation
+def get_roots(B, P, prob):
+	assert(int(B) == B)
+	assert(int(P) == P)
+	assert(prob <= 1.0 and prob >= 0)
+	assert(prob * float(P) <= B)
+
+	g = gcd(B, P)
+	q = B / g
+	r = P / g
+
+	eq_list = []
+
+	# Degenerate the order of the polynominal function
+	alpha_r = []
+	for i in range(0, r + 1):
+		f1  = np.power(      prob, r - i)
+		f2  = np.power(1.0 - prob,     i)
+		a_i = comb(r, i) * f1 * f2
+		alpha_r.append(a_i)
+
+	# We will have g functions, each is a r-order
+	# And we still get g x r = P roots
+	for k in range(0, g):
+		coeff = copy.deepcopy(alpha_r)
+		coeff = np.array(coeff)
+		coeff = coeff * np.exp(2 * np.pi * 1.0j * k / g)
+		coeff[r-q] -= 1
+		eq_roots     = np.roots(coeff)
+		eq_list = eq_list + list(eq_roots)
+
+	# Eliminate z=1
+	eq_list = np.array(eq_list)
+	min_index = np.argmin(np.abs(np.add(eq_list, -1.0)))
+	eq_list  = np.delete(eq_list, min_index)
+
+	# Step 2. Group the roots
+	# We will discard the z=1 roots, since it's trivial
+	# We will use in_root to determin pi_0 ... pi_{B-1}
+	# We will use ex_root to determin pi_B ... pi_{\infty}
+	# Discard the root whose has the minimal distance to z=1
+	ex_roots = []
+	in_roots = []
+
+	for i_root in eq_list:
+		if (np.abs(i_root) > (1.00)):
+			ex_roots.append(i_root)
+		else:
+			in_roots.append(i_root)
+
+	assert((P - B) == len(ex_roots))
+	assert((B - 1) == len(in_roots))
+
+	eq_roots = np.concatenate((ex_roots, [1.0], in_roots))
+
+	return eq_roots
 
 def get_BD1_V0(B, P, prob, J=5):
 	assert(int(B) == B)
@@ -24,38 +92,11 @@ def get_BD1_V0(B, P, prob, J=5):
 	coeff = copy.deepcopy(alpha_h)
 	coeff[P-B] -= 1
 
-	# Get roots
-	eq_roots     = np.roots(coeff)
-
-	# Step 2. Group the roots
-	# We will discard the z=1 roots, since it's trivial
-	# We will use in_root to determin pi_0 ... pi_{B-1}
-	# We will use ex_root to determin pi_B ... pi_{\infty}
-	# Discard the root whose has the minimal distance to z=1
-	min_index = np.argmin(np.abs(np.add(eq_roots, -1.0)))
-	eq_roots  = np.delete(eq_roots, min_index)
-
-	ex_roots = []
-	in_roots = []
-
-	for i_root in eq_roots:
-		if (np.abs(i_root) > (1.00)):
-			ex_roots.append(i_root)
-		else:
-			in_roots.append(i_root)
-
-	# reconstruct eq_roots
-	# 0     ~ P-B-1 item:  roots outside unit circle
-	#         P-B   item:  z=1
-	# P-B+1 ~ P-1   item:  roots inside unit circle
-	eq_roots = np.concatenate((ex_roots, [1.0], in_roots))
-
-
-	#print eq_roots
-
-	assert((P - B) == len(ex_roots))
-	assert((B - 1) == len(in_roots))
-
+	# Step 2. Get the roots
+	# Get roots: use the optimized method
+	eq_roots = get_roots(B, P, prob)
+	ex_roots = eq_roots[0 : P - B]
+	in_roots = eq_roots[P - B + 1: P]
 
 	# Step 3. Using a Linear equation to solve pi_0 ... pi_{B-1}
 	# Create Matrix A
@@ -158,7 +199,6 @@ def get_BD1_PS_Vn(B, P, p, V0):
 # Not useful
 def get_BD1_PS_V(Vn):
 	(P, m) = Vn.shape
-
 	V = np.zeros(m)
 	for i in range(0, m):
 		V[i] = 0.0
@@ -175,25 +215,15 @@ def get_BD1_PS_R(B, P, Vn):
 		for i in range(0, m):
 			# Off-slot
 			if(n < (P-B)):
-				#   Replenish Time          + Execution Time + First Period Offset
-				if( 0 == (i + 1) % B):
-					k = (((i + 1) / B )    * (P - B)) + (i + 1) - n
-				else:
-					k = (((i + 1) / B + 1) * (P - B)) + (i + 1) - n
-
+				#Replenish Time + Execution Time + First Period Offset
+				k = int_frac_ceil(i + 1, B)
+				k = k * (P - B)
+				k = k + (i + 1) - n
 				R[k] += (1.0 / P) * Vn[n][i]
 			# On-slot
 			else:
-				if (0 == ((i + 1) - (P - n)) % B):
-					k = (((i + 1) - (P - n)) / B)
-				else:
-					k = (((i + 1) - (P - n)) / B + 1)
-				
+				k = int_frac_ceil((i + 1) - (P - n), B)
 				k = k * (P - B)
 				k = k + (i + 1)
-				if(k == 1):
-					print "n=%d, i=%d" % (n,i)
 				R[k] += (1.0 / P) * Vn[n][i]
-			
-
 	return R
