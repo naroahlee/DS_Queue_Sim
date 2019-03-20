@@ -8,8 +8,9 @@ from lib.utils           import *
 from lib.arrival_process import *
 from lib.server_model    import *
 from lib.analytics import get_BD1_V0
-from lib.analytics import get_BD1_PS_Vn
-from lib.analytics import get_BD1_PS_R
+from lib.analytics import get_DS_U_T
+from lib.analytics import get_DS_V_UT
+from lib.analytics import get_BD1_DS_R
 import matplotlib.pyplot as plt
 
 # ================Parameters ===============
@@ -20,21 +21,23 @@ p = 0.5
 service_dur = 1
 
 # Server:
-budget = 2
-period = 3
+budget = 4
+period = 5
 
 # Step 1. Get Virtual Waiting time distribution @ Start of a period (P + 0)
 V0 = get_BD1_V0(budget, period, p)
 
-Vn = get_BD1_PS_Vn(budget, period, p, V0)
+# Step 2. Get V_UT
+V_UT = get_DS_V_UT(budget, period, p, V0)
+U_T  = get_DS_U_T(budget, period, p, V0)
 
+# Step 3. Get R
+R  = get_BD1_DS_R(budget, period, p, V_UT, U_T)
 
-#print Vn
+response_aly = np.array(R[0: 20])
+#response_aly = response_aly / sum(response_aly)
 
-R  = get_BD1_PS_R(budget, period, Vn)
-
-response_aly = R[0: 20]
-
+print sum(response_aly)
 
 # =========================== Simulation ===============================
 
@@ -49,7 +52,7 @@ resultfile   = './data/output/run01.csv'
 # Generate Emprical Samples
 # Bernoulli Process
 arrival_evt = gen_bernoulli_process(p, sample_num)
-(atserver_evt, leave_evt) = run_D_FIFO_PS_server_DT(budget, period, service_dur, arrival_evt)
+(atserver_evt, leave_evt) = run_D_FIFO_DS_server_DT(budget, period, service_dur, arrival_evt)
 response_sim = np.subtract(leave_evt, arrival_evt)
 
 cnt = [0] * len(response_aly)
