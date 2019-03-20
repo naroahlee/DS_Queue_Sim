@@ -71,7 +71,8 @@ def get_roots(B, P, prob):
 
 	return eq_roots
 
-def get_BD1_V0(B, P, prob, J=5):
+# Can hardly be stable, just for reference
+def get_BD1_V0(B, P, prob, J=4):
 	assert(int(B) == B)
 	assert(int(P) == P)
 	assert(int(J) == J)
@@ -98,6 +99,7 @@ def get_BD1_V0(B, P, prob, J=5):
 	ex_roots = eq_roots[0 : P - B]
 	in_roots = eq_roots[P - B + 1: P]
 
+	print eq_roots
 	# Step 3. Using a Linear equation to solve pi_0 ... pi_{B-1}
 	# Create Matrix A
 	# The Matrix will be BxB order
@@ -113,16 +115,19 @@ def get_BD1_V0(B, P, prob, J=5):
 
 	for i in range(1, B):
 		xi = in_roots[i - 1]
+		print xi
 		for j in range(0, B):
 			A[i][j] = 0.0
 			for h in range(0, B - j):
 				A[i][j] += ((np.power(xi, B) - np.power(xi, h + j)) * alpha_h[h])
 
-	#print A
+#	print A
 
 	b = np.zeros(B)
 	b[0] = B - prob * P 
 	pi_j = np.linalg.solve(A, b)
+
+	print pi_j
 
 	assert(B == len(pi_j))
 
@@ -154,7 +159,7 @@ def get_BD1_V0(B, P, prob, J=5):
 		pi_j   = np.concatenate((pi_j, [pi_jpB]))
 
 
-	pi_j = np.real(pi_j)
+	pi_j = np.abs(pi_j)
 
 	# Step 4.3 Using GT method to correct the tail
 	# Adopt the tail method:
@@ -178,6 +183,37 @@ def get_BD1_V0(B, P, prob, J=5):
 		
 	return pi_j
 
+def get_BD1_V0_iter(B, P, p, W, time=100):
+	Vn = np.zeros((P + 1, W))
+	Vn[0][0] = 1.0
+
+	for k in range(0, time):
+		#print "Iter[%2d]" % (k)
+		for n in range(1, P + 1):
+			# Compute Off-slot
+			if(n <= (P - B)):
+				Vn[n][0] = Vn[n-1][0] * (1.0 - p)
+				for i in range(1, W):
+					Vn[n][i] = Vn[n-1][i-1] * p + Vn[n-1][i] * (1.0-p)
+			else:
+			# Compute On-slot
+				Vn[n][0] = Vn[n-1][0] + Vn[n-1][1] * (1.0 - p)
+				for i in range(1, W - 1):
+					Vn[n][i] = Vn[n - 1][i] * p + Vn[n-1][i + 1] * (1.0-p)
+				Vn[n][W - 1] = p * Vn[n-1][W - 1] 
+
+		# Normalize Vn[P]
+		Vn[P] = (Vn[P] / sum(Vn[P]))
+	
+		# Compute the 1-norm Distance
+		#err = Vn[P] - Vn[0]
+		#err_1norm = np.linalg.norm(err, ord=1)
+		#print err_1norm
+
+		Vn[0] = Vn[P]
+
+	return Vn[0]
+
 def get_BD1_PS_Vn(B, P, p, V0):
 	m = len(V0)
 	Vn = np.zeros((P, m))
@@ -194,6 +230,7 @@ def get_BD1_PS_Vn(B, P, p, V0):
 			Vn[n][0] = Vn[n-1][0] + Vn[n-1][1] * (1.0 - p)
 			for i in range(1, m - 1):
 				Vn[n][i] = Vn[n - 1][i] * p + Vn[n-1][i + 1] * (1.0-p)
+			Vn[n][m-1] = p * Vn[n-1][m-1]
 	return Vn
 
 def get_BD1_PS_R(B, P, Vn):

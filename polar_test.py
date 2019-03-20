@@ -32,6 +32,11 @@ def get_roots(B, P, prob):
 		eq_roots     = np.roots(coeff)
 		eq_list = eq_list + list(eq_roots)
 
+	# Eliminate z=1
+	eq_list = np.array(eq_list)
+	min_index = np.argmin(np.abs(np.add(eq_list, -1.0)))
+	eq_list  = np.delete(eq_list, min_index)
+
 	ex_roots = []
 	in_roots = []
 
@@ -50,8 +55,8 @@ def get_roots(B, P, prob):
 	return eq_roots
 
 # Compute areas and colors
-B = 60
-P = 100
+B = 2
+P = 3
 p = 0.50
 
 roots = get_roots(B, P, p)
