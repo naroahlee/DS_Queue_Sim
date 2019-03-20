@@ -71,6 +71,7 @@ def get_roots(B, P, prob):
 
 	return eq_roots
 
+# This is for analytical solution
 # Can hardly be stable, just for reference
 def get_BD1_V0(B, P, prob, J=4):
 	assert(int(B) == B)
@@ -280,111 +281,60 @@ def f_DS(l, m, n, B, P):
 	return t
 	
 
-# =========================================================
-# Compute Pr{U=m| T=n}
-# At slot n, the probablity of m budget remaining
-def get_DS_U_T(B, P, p, V0):
-	U_T = np.zeros((B + 1, P))
-	U_T[B][0] = 1.0
-
-	# Budget won't be exhausted, i.e. m != 0
-	for n in range(1, B):
-		cur_sum = 0.0
-		for m in range(B, B-n, -1):
-			Pr = 0.0
-			for l in range(0, B - m + 1):
-				f1  = np.power(      p, (B - m - l))
-				f2  = np.power(1.0 - p, n - (B - m - l))
-				Pr  += comb(n, (B-m-l)) * f1 * f2 * V0[l]
-			U_T[m][n] = Pr
-			cur_sum  += Pr
-		U_T[B-n][n] = 1 - cur_sum
-			
-
-	for n in range(B, P):
-		cur_sum = 0.0
-		for m in range(B, 0, -1):
-			Pr = 0.0
-			for l in range(0, B - m + 1):
-				f1  = np.power(      p, (B - m - l))
-				f2  = np.power(1.0 - p, n - (B - m - l))
-				Pr  += comb(n, (B-m-l)) * f1 * f2 * V0[l]
-			U_T[m][n] = Pr
-			cur_sum  += Pr
-		U_T[0][n] = 1 - cur_sum
-
-	return U_T
-
-
-#	
-#	if (0 == m):
-#		Pr = 0.0
-#		# There are [B, n] jobs arrival within n slots
-#		for j in range(B, n + 1):
-#			f1  = np.power(      p,     j)
-#			f2  = np.power(1.0 - p, n - j)
-#			Pr  += comb(n, j) * f1 * f2
-#	else:	#(1 <= m <= B)
-#		# There are (B-m) jobs arrival within n slots
-#		f1  = np.power(      p,      B - m)
-#		f2  = np.power(1.0 - p, n - (B - m))
-#		Pr = comb(n, B-m) * f1 * f2
-		
-	return Pr
 
 # ========================================================
-def get_DS_V_UT(B, P, p, V0):
+def get_DS_VU_T(B, P, p, V0):
 	W = len(V0)
-	V_UT = np.zeros((W, B + 1, P))
+	VU_T = np.zeros((W, B + 1, P))
 
 	# fill the initial number V0
 	for l in range(0, W):
-		V_UT[l][B][0] = V0[l]
+		VU_T[l][B][0] = V0[l]
 
 	# Compute 1~B line
 	for n in range(1, B + 1):
-		V_UT[0][B][n] = (1-p) * V_UT[0][B][n-1] 
+		VU_T[0][B][n] = (1-p) * VU_T[0][B][n-1] 
 		# Triangle
 		for m in range(1, n):
-			V_UT[0][B-m][n] = p * V_UT[0][B-m+1][n-1] + (1-p) * V_UT[0][B-m][n-1]
+			VU_T[0][B-m][n] = p * VU_T[0][B-m+1][n-1] + (1-p) * VU_T[0][B-m][n-1]
 		for l in range(0, W - 1):
-			V_UT[l][B-n][n] = p * V_UT[l][B-n+1][n-1] + (1-p) * V_UT[l+1][B-n+1][n-1]
-		V_UT[W-1][B-n][n] = p * V_UT[l][B-n+1][n-1] 
+			VU_T[l][B-n][n] = p * VU_T[l][B-n+1][n-1] + (1-p) * VU_T[l+1][B-n+1][n-1]
+		VU_T[W-1][B-n][n] = p * VU_T[l][B-n+1][n-1] 
 
 	# Compute 1~B line
 	for n in range(B + 1, P):
-		V_UT[0][B][n] = (1-p) * V_UT[0][B][n-1] 
+		VU_T[0][B][n] = (1-p) * VU_T[0][B][n-1] 
 		# No longer Triangle
 		for m in range(1, B):
-			V_UT[0][B-m][n] = p * V_UT[0][B-m+1][n-1] + (1-p) * V_UT[0][B-m][n-1]
+			VU_T[0][B-m][n] = p * VU_T[0][B-m+1][n-1] + (1-p) * VU_T[0][B-m][n-1]
 
-		V_UT[0][0][n] = p * V_UT[0][1][n-1] + (1-p) * V_UT[0][0][n-1] 
+		VU_T[0][0][n] = p * VU_T[0][1][n-1] + (1-p) * VU_T[0][0][n-1] 
 		for l in range(1, W):
-			V_UT[l][0][n] = p * V_UT[l-1][0][n-1] + (1-p) * V_UT[l][0][n-1]
+			VU_T[l][0][n] = p * VU_T[l-1][0][n-1] + (1-p) * VU_T[l][0][n-1]
 
-	return V_UT
+	return VU_T
 
-def get_BD1_DS_R(B, P, p, V_UT, U_T):
-	(W, B1, P1) = V_UT.shape
+def get_BD1_DS_R(B, P, p, VU_T):
+	(W, B1, P1) = VU_T.shape
 	R = np.zeros(100)
 	for n in range(0, B + 1):
 		for m in range(0, n):
 			k = f_DS(0, B - m, n, B, P)
 			#R[k] += (1.0 / P) * U_T[B - m][n] * V_UT[0][B - m][n]
-			R[k] += (1.0 / P) * V_UT[0][B - m][n]
+			R[k] += (1.0 / P) * VU_T[0][B - m][n]
 		for l in range(0, W):
 			k = f_DS(l, B - n, n, B, P)
 			#R[k] += (1.0 / P) * U_T[B - n][n] * V_UT[l][B - n][n]
-			R[k] += (1.0 / P) * V_UT[l][B - n][n]
+			R[k] += (1.0 / P) * VU_T[l][B - n][n]
 
 	for n in range(B + 1, P):
 		for m in range(0, B):
 			k = f_DS(0, B - m, n, B, P)
 			#R[k] += (1.0 / P) * U_T[B - m][n] * V_UT[0][B - m][n]
-			R[k] += (1.0 / P) * V_UT[0][B - m][n]
+			R[k] += (1.0 / P) * VU_T[0][B - m][n]
 		for l in range(0, W):
 			k = f_DS(l, 0, n, B, P)
 			#R[k] += (1.0 / P) * U_T[0][n]     * V_UT[l][0][n]
-			R[k] += (1.0 / P) * V_UT[l][0][n]
+			R[k] += (1.0 / P) * VU_T[l][0][n]
 
 	return R

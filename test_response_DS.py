@@ -8,8 +8,7 @@ from lib.utils           import *
 from lib.arrival_process import *
 from lib.server_model    import *
 from lib.analytics import get_BD1_V0_iter
-from lib.analytics import get_DS_U_T
-from lib.analytics import get_DS_V_UT
+from lib.analytics import get_DS_VU_T
 from lib.analytics import get_BD1_DS_R
 import matplotlib.pyplot as plt
 
@@ -31,11 +30,10 @@ IterTime    = 100
 V0 = get_BD1_V0_iter(budget, period, p, VectorWidth, IterTime)
 
 # Step 2. Get V_UT
-V_UT = get_DS_V_UT(budget, period, p, V0)
-U_T  = get_DS_U_T(budget, period, p, V0)
+VU_T = get_DS_VU_T(budget, period, p, V0)
 
 # Step 3. Get R
-R  = get_BD1_DS_R(budget, period, p, V_UT, U_T)
+R  = get_BD1_DS_R(budget, period, p, VU_T)
 
 response_aly = np.array(R[0: 20])
 #response_aly = response_aly / sum(response_aly)
