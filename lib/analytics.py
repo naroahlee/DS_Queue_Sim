@@ -184,24 +184,33 @@ def get_BD1_V0(B, P, prob, J=4):
 		
 	return pi_j
 
-def get_BD1_V0_iter(B, P, p, W, time=100):
+# B/D/1 D>=1
+def get_BD1_V0_iter(B, P, p, d, W, time=100):
 	Vn = np.zeros((P + 1, W))
 	Vn[0][0] = 1.0
 
 	for k in range(0, time):
-		#print "Iter[%2d]" % (k)
 		for n in range(1, P + 1):
-			# Compute Off-slot
 			if(n <= (P - B)):
-				Vn[n][0] = Vn[n-1][0] * (1.0 - p)
-				for i in range(1, W):
-					Vn[n][i] = Vn[n-1][i-1] * p + Vn[n-1][i] * (1.0-p)
+			# Compute Off-slot
+				for i in range(0, d):
+					Vn[n][i] = Vn[n-1][i] * (1.0-p)
+				for i in range(d, W):
+					Vn[n][i] = Vn[n-1][i-d] * p + Vn[n-1][i] * (1.0-p)
 			else:
 			# Compute On-slot
-				Vn[n][0] = Vn[n-1][0] + Vn[n-1][1] * (1.0 - p)
-				for i in range(1, W - 1):
-					Vn[n][i] = Vn[n - 1][i] * p + Vn[n-1][i + 1] * (1.0-p)
-				Vn[n][W - 1] = p * Vn[n-1][W - 1] 
+				if(1 == d):
+					Vn[n][0] = Vn[n-1][0]             + Vn[n-1][1] * (1.0-p)
+					for i in range(1, W - 1):
+						Vn[n][i] = Vn[n-1][i] * p     + Vn[n-1][i+1] * (1.0-p)
+					Vn[n][W - 1] = p * Vn[n-1][W - 1] 
+				else:#(d >= 2)
+					Vn[n][0] = Vn[n-1][0] * (1.0-p)   + Vn[n-1][1] * (1.0-p)
+					for i in range(1, d - 1):
+						Vn[n][i] = Vn[n-1][i+1] * (1.0-p)
+					for i in range(d - 1, W - 1):
+						Vn[n][i] = Vn[n-1][i-d+1] * p + Vn[n-1][i+1] * (1.0-p)
+					Vn[n][W - 1] = p * Vn[n-1][W-d+1] 
 
 		# Normalize Vn[P]
 		Vn[P] = (Vn[P] / sum(Vn[P]))
@@ -215,44 +224,55 @@ def get_BD1_V0_iter(B, P, p, W, time=100):
 
 	return Vn[0]
 
-def get_BD1_PS_Vn(B, P, p, V0):
-	m = len(V0)
-	Vn = np.zeros((P, m))
+# B/D/1 D>=1
+def get_BD1_PS_Vn(B, P, p, d, V0):
+	W = len(V0)
+	Vn = np.zeros((P, W))
+	# Iteration Initial State has been computed
 	Vn[0] = V0
 
 	for n in range(1, P):
-		# Compute Off-slot
 		if(n <= (P - B)):
-			Vn[n][0] = Vn[n-1][0] * (1.0 - p)
-			for i in range(1, m):
-				Vn[n][i] = Vn[n-1][i-1] * p + Vn[n-1][i] * (1.0-p)
+		# Compute Off-slot
+			for i in range(0, d):
+				Vn[n][i] = Vn[n-1][i] * (1.0-p)
+			for i in range(d, W):
+				Vn[n][i] = Vn[n-1][i-d] * p + Vn[n-1][i] * (1.0-p)
 		else:
 		# Compute On-slot
-			Vn[n][0] = Vn[n-1][0] + Vn[n-1][1] * (1.0 - p)
-			for i in range(1, m - 1):
-				Vn[n][i] = Vn[n - 1][i] * p + Vn[n-1][i + 1] * (1.0-p)
-			Vn[n][m-1] = p * Vn[n-1][m-1]
+			if(1 == d):
+				Vn[n][0] = Vn[n-1][0]             + Vn[n-1][1] * (1.0-p)
+				for i in range(1, W - 1):
+					Vn[n][i] = Vn[n-1][i] * p     + Vn[n-1][i+1] * (1.0-p)
+				Vn[n][W - 1] = p * Vn[n-1][W - 1] 
+			else:#(d >= 2)
+				Vn[n][0] = Vn[n-1][0] * (1.0-p)   + Vn[n-1][1] * (1.0-p)
+				for i in range(1, d - 1):
+					Vn[n][i] = Vn[n-1][i+1] * (1.0-p)
+				for i in range(d - 1, W - 1):
+					Vn[n][i] = Vn[n-1][i-d+1] * p + Vn[n-1][i+1] * (1.0-p)
+				Vn[n][W - 1] = p * Vn[n-1][W-d+1] 
+
 	return Vn
 
-def get_BD1_PS_R(B, P, Vn):
-	(P1, m) = Vn.shape
-	R = np.zeros(100)
+def f_PS(l, n, B, P, d):
+	if(n < P-B):
+		t = int_frac_ceil((l+d), B) * (P - B) + l + d - n
+	else:
+		t = int_frac_ceil( (l+d)-(P-n) , B) * (P - B) + l + d
+
+	return t
+
+def get_BD1_PS_R(B, P, d, Vn):
+	(P1, W) = Vn.shape
+	R = np.zeros(((W + d) / B + 1) * P + 1)
 	for n in range(0, P):
-		for i in range(0, m):
-			# Off-slot
-			if(n < (P-B)):
-				#Replenish Time + Execution Time + First Period Offset
-				k = int_frac_ceil(i + 1, B)
-				k = k * (P - B)
-				k = k + (i + 1) - n
-				R[k] += (1.0 / P) * Vn[n][i]
-			# On-slot
-			else:
-				k = int_frac_ceil((i + 1) - (P - n), B)
-				k = k * (P - B)
-				k = k + (i + 1)
-				R[k] += (1.0 / P) * Vn[n][i]
+		for l in range(0, W):
+			k = f_PS(l, n, B, P, d)
+			R[k] += (1.0 / P) * Vn[n][l]
 	return R
+
+# TBD: Support d>=2
 
 # ===================== For Deferrable Server ===========================
 #     the Virtual Waiting Time : l

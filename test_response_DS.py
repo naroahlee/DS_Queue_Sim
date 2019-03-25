@@ -14,14 +14,14 @@ import matplotlib.pyplot as plt
 
 # ================Parameters ===============
 # For Bernoulli Process
-p = 0.60
+p = 0.50
 
 # For imbedded queue server, service_time = 1
 service_dur = 1
 
 # Server:
-budget = 2
-period = 3
+budget = 4
+period = 7
 
 # Step 1. Get Virtual Waiting time distribution @ Start of a period (P + 0)
 # Naroah: Using the iteration Method

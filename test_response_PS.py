@@ -14,33 +14,33 @@ import matplotlib.pyplot as plt
 
 # ================Parameters ===============
 # For Bernoulli Process
-p = 0.35
+p = 0.20
 
 # For imbedded queue server, service_time = 1
-service_dur = 1
+service_dur = 3
 
 # Server:
-budget = 3
-period = 7
+budget = 8
+period = 10
 
 # Step 1. Get Virtual Waiting time distribution @ Start of a period (P + 0)
 # Naroah: Using the iteration
-VectorWidth = 20
-IterTime    = 100
-V0 = get_BD1_V0_iter(budget, period, p, VectorWidth, IterTime)
+VectorWidth = 100
+IterTime    = 200
+#V0 = get_BD1_V0_iter(budget, period, p, VectorWidth, IterTime)
+V0 = get_BD1_V0_iter(budget, period, p, service_dur, VectorWidth, IterTime)
 
-#print 'V0'
-#print V0
+#Vn = get_BD1_PS_Vn(budget, period, p, V0)
+Vn = get_BD1_PS_Vn(budget, period, p, service_dur, V0)
 
-Vn = get_BD1_PS_Vn(budget, period, p, V0)
+for i in range(0, period):
+	print "V%d = %f" % (i, sum(Vn[i]))
 
+#R  = get_BD1_PS_R(budget, period, Vn)
+R  = get_BD1_PS_R(budget, period, service_dur, Vn)
+print "sum R = %f" % (sum(R))
 
-#print Vn
-
-R  = get_BD1_PS_R(budget, period, Vn)
-
-response_aly = R[0: 20]
-
+response_aly = R[0: 40]
 
 # =========================== Simulation ===============================
 
@@ -78,10 +78,10 @@ y_pos = np.array(range(0, len(response_aly)))
 plt.bar(y_pos - 0.2, response_aly, width=0.4, align='center', alpha=0.5)
 plt.bar(y_pos + 0.2, dist, width=0.4, align='center', alpha=0.5)
 plt.legend(['Analytics', 'Simulation'])
-plt.xticks(range(0, 21))
+plt.xticks(range(0, 41))
 plt.xlabel('Response Time (Time Unit)')
 plt.ylabel('Probability (Frequency)')
-plt.xlim([0, 20])
-mytitle = 'P=%d, B=%d, %c=%3.2f' % (period, budget, u'\u03B7', p)
+plt.xlim([0, 40])
+mytitle = 'P=%d, B=%d, d=%d, %c=%3.2f' % (period, budget, service_dur, u'\u03B7', p)
 plt.title(mytitle)
 plt.show()
