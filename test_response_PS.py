@@ -27,16 +27,16 @@ period = 10
 # Naroah: Using the iteration
 VectorWidth = 100
 IterTime    = 200
-#V0 = get_BD1_V0_iter(budget, period, p, VectorWidth, IterTime)
+
 V0 = get_BD1_V0_iter(budget, period, p, service_dur, VectorWidth, IterTime)
 
-#Vn = get_BD1_PS_Vn(budget, period, p, V0)
+# Step 2. Get Vn or V|T
 Vn = get_BD1_PS_Vn(budget, period, p, service_dur, V0)
 
-for i in range(0, period):
-	print "V%d = %f" % (i, sum(Vn[i]))
+# Check the normalization condition
+#for i in range(0, period):
+#	print "V%d = %f" % (i, sum(Vn[i]))
 
-#R  = get_BD1_PS_R(budget, period, Vn)
 R  = get_BD1_PS_R(budget, period, service_dur, Vn)
 print "sum R = %f" % (sum(R))
 

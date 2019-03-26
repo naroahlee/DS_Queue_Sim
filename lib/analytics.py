@@ -279,24 +279,25 @@ def get_BD1_PS_R(B, P, d, Vn):
 #     the Remaining Budget     : m
 #     the arriving slot offset : n
 # to determine response time
-def f_DS(l, m, n, B, P):
+def f_DS(l, m, n, B, P, d):
 	assert(int(B) == B and (B >  0))
 	assert(int(P) == P and (P >= B))
 	assert(int(l) == l and (l >= 0))
+	assert(int(d) == d and (d >= 1))
 	assert(int(m) == m and (m >= 0) and (m <= B))
 	assert(int(n) == n and (n >= B - m) and (n < P))
 
 	r = min(m, P - n)
 	v = P - n - r 
 
-	if (l + 1 <= r):
-		t = l + 1
-	elif (l + 1 <= r + B):
-		t = l + 1 + v
+	if (l + d <= r):
+		t = l + d
+	elif (l + d <= r + B):
+		t = l + d + v
 	else:
-		t = int_frac_ceil(((l+1)-(r+B)), B)
+		t = int_frac_ceil(((l+d)-(r+B)), B)
 		t = t * (P - B)
-		t = t + l + 1 + v
+		t = t + l + d + v
 
 	return t
 	
@@ -339,22 +340,122 @@ def get_BD1_DS_R(B, P, p, VU_T):
 	R = np.zeros(100)
 	for n in range(0, B + 1):
 		for m in range(0, n):
-			k = f_DS(0, B - m, n, B, P)
+			k = f_DS(0, B - m, n, B, P, 1)
 			#R[k] += (1.0 / P) * U_T[B - m][n] * V_UT[0][B - m][n]
 			R[k] += (1.0 / P) * VU_T[0][B - m][n]
 		for l in range(0, W):
-			k = f_DS(l, B - n, n, B, P)
+			k = f_DS(l, B - n, n, B, P, 1)
 			#R[k] += (1.0 / P) * U_T[B - n][n] * V_UT[l][B - n][n]
 			R[k] += (1.0 / P) * VU_T[l][B - n][n]
 
 	for n in range(B + 1, P):
 		for m in range(0, B):
-			k = f_DS(0, B - m, n, B, P)
+			k = f_DS(0, B - m, n, B, P, 1)
 			#R[k] += (1.0 / P) * U_T[B - m][n] * V_UT[0][B - m][n]
 			R[k] += (1.0 / P) * VU_T[0][B - m][n]
 		for l in range(0, W):
-			k = f_DS(l, 0, n, B, P)
+			k = f_DS(l, 0, n, B, P, 1)
 			#R[k] += (1.0 / P) * U_T[0][n]     * V_UT[l][0][n]
 			R[k] += (1.0 / P) * VU_T[l][0][n]
+
+	return R
+
+
+# The new method for getting the VU_T when d >= 2
+# Return:
+# A list contains P lists to identify which joint probabality is no zero
+# For Each of the P lists:
+#     Contains a tuple of (V=l, U=m) to identify the one with no zero probablity
+def get_DS_VU_T_list(B, P, p, d, V0):
+	nz_list = []
+
+	# initalization
+	W = len(V0)
+	VU_T = np.zeros((W, B + 1, P))
+
+
+	templist = []
+	# fill the initial number V0
+	for l in range(0, W):
+		VU_T[l][B][0] = V0[l]
+		templist.append( (l, B) )
+
+	nz_list.append(templist)
+	
+	for n in range(0, P - 1):
+		templist = []
+		# For each Iteration, reset the checkmark
+		checkchart = np.zeros((W, B + 1))
+
+		for (l, m) in nz_list[n]:
+			if(m > 0):
+				if(l > 0):
+					# We have budget and we have things pending
+					# If nothing incoming, use budget for already pending task
+					VU_T[l-1  ][m-1][n+1] += VU_T[l][m][n] * (1 - p)
+					if(0 == checkchart[l-1  ][m-1]):
+						checkchart[l-1  ][m-1] = 1
+						templist.append( (l-1  ,m-1) )
+
+					# Sacrifice some tail proportion
+					if(l+d-1 >= W):
+						continue
+
+					# If something incoming, use budget for already pending task
+					VU_T[l+d-1][m-1][n+1] += VU_T[l][m][n] * p
+					if(0 == checkchart[l+d-1][m-1]):
+						checkchart[l+d-1][m-1] = 1
+						templist.append( (l+d-1,m-1) )
+
+				else: #(l == 0)
+					# If nothing is incoming, system idle
+					VU_T[l    ][m  ][n+1] += VU_T[l][m][n] * (1 - p)
+					if(0 == checkchart[l    ][m  ]):
+						checkchart[l    ][m  ] = 1
+						templist.append( (l    ,m  ) )
+
+					# Sacrifice some tail proportion
+					if(l+d-1 >= W):
+						continue
+
+					# If something incoming, use budget for current incoming task 
+					VU_T[l+d-1][m-1][n+1] += VU_T[l][m][n] * p
+					if(0 == checkchart[l+d-1][m-1]):
+						checkchart[l+d-1][m-1] = 1
+						templist.append( (l+d-1,m-1) )
+			
+			else: #(m = 0)
+			# Regardless l == 0 or l > 0, we can only accumulate the thing
+				VU_T[l    ][m  ][n+1] += VU_T[l][m][n] * (1 - p)
+				if(0 == checkchart[l    ][m  ]):
+					checkchart[l    ][m  ] = 1
+					templist.append( (l    ,m  ) )
+
+				# Sacrifice some tail proportion
+				if(l+d >= W):
+					continue
+
+				# If something incoming, we can only accumulate
+				VU_T[l+d  ][m  ][n+1] += VU_T[l][m][n] * p
+				if(0 == checkchart[l+d  ][m  ]):
+					checkchart[l+d  ][m  ] = 1
+					templist.append( (l+d,m  ) )
+			# End of * for (l ,m) *
+		
+		nz_list.append(templist)
+		# End of  * for n *
+
+	return (nz_list, VU_T) 
+
+# New method for DS, which can handle d >= 2
+def get_BD1_DS_R_list(B, P, p, d, VU_T, nz_list):
+	(W, B1, P1) = VU_T.shape
+	R = np.zeros(((W + d) / B + 1) * P)
+
+	for n in range(0, P):
+		for (l, m) in nz_list[n]:
+
+			k = f_DS(l, m, n, B, P, d)
+			R[k] += (1.0 / P) * VU_T[l][m][n]
 
 	return R
