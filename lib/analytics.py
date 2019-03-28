@@ -459,3 +459,30 @@ def get_BD1_DS_R_list(B, P, p, d, VU_T, nz_list):
 			R[k] += (1.0 / P) * VU_T[l][m][n]
 
 	return R
+
+def get_MDPS1_from_BDPS1(arrival_rate, service_rate, budget, period, N):
+	p = arrival_rate / N
+	d = N
+	P = int(period * N)
+	B = int(budget * N)
+
+	print p,d,P,B
+
+	# Step 1. Get Virtual Waiting time distribution @ Start of a period (P + 0)
+	# Naroah: Using the iteration
+	VectorWidth = 200
+	IterTime    = 100
+
+	V0 = get_BD1_V0_iter(B, P, p, d, VectorWidth, IterTime)
+	Vn = get_BD1_PS_Vn  (B, P, p, d, V0)
+	R  = get_BD1_PS_R   (B, P, d, Vn)
+
+	y_cdf = []
+	y_cdf.append(R[0])
+	for i in range(1, len(R)):
+		new_item = y_cdf[i - 1] + R[i]
+		y_cdf.append(new_item)
+	
+	x_tick = np.array(range(0, len(R))) * 1.0 / N
+		
+	return (x_tick, y_cdf)

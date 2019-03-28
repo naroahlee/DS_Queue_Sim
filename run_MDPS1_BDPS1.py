@@ -37,14 +37,7 @@ x_axis = np.linspace(0, x_lim, ecdf_samples)
 # Generate Emprical Samples
 arrival_evt = gen_poisson_process(arrival_rate, sample_num)
 
-#=============== For DS Best ===============
-# Stimulate the server
-(atserver_evt, leave_evt) = run_D_FIFO_DS_server(budget, period, service_rate, arrival_evt)
-response_time = np.subtract(leave_evt, arrival_evt)
-ecdf1 = sm.distributions.ECDF(response_time);
-y_empr_ds = ecdf1(x_axis);
-
-#=============== For DS Worst ===============
+#=============== For PS Best ===============
 # Stimulate the server
 (atserver_evt, leave_evt) = run_D_FIFO_PS_server(budget, period, service_rate, arrival_evt)
 response_time = np.subtract(leave_evt, arrival_evt)
@@ -62,5 +55,5 @@ mytitle = "P=%.1f, Bw=%2d%%, %c=%.1f, %c=%.1f" % (period, int(bandwidth * 100), 
 
 #plot_curves_with_same_x(x_axis, [y_theo], ['M/D/1 Theoretical'], xy_lim, mytitle)
 #plot_curves_with_same_x(x_axis, [y_theo, y_empr_ds], ['M/D/1 Theoretical', 'M/D(DS)/1 Best'], xy_lim, mytitle)
-plot_curves_with_same_x(x_axis, [y_theo, y_empr_ds, y_empr_ps], ['M/D/1 Theoretical', 'M/D(DS)/1 Best', 'M/D(DS)/1 Worst'], xy_lim, mytitle)
+plot_curves_with_same_x(x_axis, [y_theo, y_empr_ps], ['M/D/1 Theoretical', 'M/D(PS)/1'], xy_lim, mytitle)
 
