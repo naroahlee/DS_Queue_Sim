@@ -1,5 +1,10 @@
 #!/usr/bin/python
-# Compare Exponential CDF between Theoretical and Emprical
+# Plot:
+#   1 The Numerical  Result of Response Time distribution of B/D(PS)/1
+#   2 The Simualtion Result of Response Time distribution of B/D(PS)/1
+# Note:
+#   Using Probability Mass Function.
+
 import sys
 import math
 import numpy as np
@@ -8,10 +13,8 @@ from lib.utils           import *
 from lib.arrival_process import *
 from lib.server_model    import *
 from lib.analytics import get_BD1_V0_iter
-from lib.analytics import get_DS_VU_T
-from lib.analytics import get_DS_VU_T_list
-from lib.analytics import get_BD1_DS_R
-from lib.analytics import get_BD1_DS_R_list
+from lib.analytics import get_BD1_PS_Vn
+from lib.analytics import get_BD1_PS_R
 import matplotlib.pyplot as plt
 
 # ================Parameters ===============
@@ -26,22 +29,23 @@ budget = 8
 period = 10
 
 # Step 1. Get Virtual Waiting time distribution @ Start of a period (P + 0)
-# Naroah: Using the iteration Method
+# Naroah: Using the iteration
 VectorWidth = 400
 IterTime    = 200
+
 V0 = get_BD1_V0_iter(budget, period, p, service_dur, VectorWidth, IterTime)
 
-# Step 2. Get V_UT
-#VU_T = get_DS_VU_T(budget, period, p, V0)
+# Step 2. Get Vn or V|T
+Vn = get_BD1_PS_Vn(budget, period, p, service_dur, V0)
 
-(nz_list, VU_T) = get_DS_VU_T_list(budget, period, p, service_dur, V0)
+# Check the normalization condition
+#for i in range(0, period):
+#	print "V%d = %f" % (i, sum(Vn[i]))
 
-# Step 3. Get R
-#R  = get_BD1_DS_R(budget, period, p, VU_T)
-R  = get_BD1_DS_R_list(budget, period, p, service_dur, VU_T, nz_list)
+R  = get_BD1_PS_R(budget, period, service_dur, Vn)
 print "sum R = %f" % (sum(R))
 
-response_aly = np.array(R[0: 40])
+response_aly = R[0: 40]
 
 # =========================== Simulation ===============================
 
@@ -56,7 +60,7 @@ resultfile   = './data/output/run01.csv'
 # Generate Emprical Samples
 # Bernoulli Process
 arrival_evt = gen_bernoulli_process(p, sample_num)
-(atserver_evt, leave_evt) = run_D_FIFO_DS_server_DT(budget, period, service_dur, arrival_evt)
+(atserver_evt, leave_evt) = run_D_FIFO_PS_server_DT(budget, period, service_dur, arrival_evt)
 response_sim = np.subtract(leave_evt, arrival_evt)
 
 cnt = [0] * len(response_aly)

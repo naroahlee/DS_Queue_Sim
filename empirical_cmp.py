@@ -82,7 +82,3 @@ y_empr_ds2 = ecdf5(x_axis);
 mytitle = "P=%.1f, Bw=%2d%%, %c=%.1f, %c=%.1f" % (period, int(bandwidth * 100), u'\u03BB', arrival_rate, u'\u03BC', service_rate)
 plot_curves_with_same_x(x_axis, [y_theo, y_mdds1_sim, y_mdps1_sim, y_empr, y_empr_ds, y_empr_ds2], ['M/D/1 Theo', 'M/D(DS)/1 Sim', 'M/D(PS)/1 Sim', 'M/D/1 Empr', 'M/D(DS)/1 Empr H', 'M/D(DS)/1 Empr S'], xy_lim, mytitle)
 
-
-
- 
-

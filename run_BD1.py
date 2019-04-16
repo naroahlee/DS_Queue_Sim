@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Compare Exponential CDF between Theoretical and Emprical
+# Verify the Virtual Waiting Time
 import sys
 import math
 import numpy as np
@@ -31,21 +31,11 @@ resultfile   = './data/output/run01.csv'
 # Bernoulli Process
 arrival_evt = gen_bernoulli_process(p, sample_num)
 # arrival_evt = read_arrival_data(processfile)
+
 print "Arrival   Time"
 print arrival_evt
 
 write_arrival_data(processfile, arrival_evt)
-
-# Stimulate the server
-#(atserver_evt, leave_evt) = run_D_FIFO_DS_server_DT(budget, period, service_dur, arrival_evt)
-
-
-#print "DS Departure Time"
-#print leave_evt
-
-#print "DS Response  Time"
-#response_time = np.subtract(leave_evt, arrival_evt)
-#print response_time
 
 (atserver_evt, leave_evt) = run_D_FIFO_PS_server_DT(budget, period, service_dur, arrival_evt)
 

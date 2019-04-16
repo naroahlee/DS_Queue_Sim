@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Compare Exponential CDF between Theoretical and Emprical
+# M/D(SS)/1 Server
 import sys
 import math
 import numpy as np
@@ -21,7 +21,7 @@ period       = 2.0
 budget       = bandwidth * period
 
 # For D_FIFO_SS server
-saving       = 10.0
+saving       = 1.0
 
 # Figure Plot Parameter
 ecdf_samples = 10000
@@ -37,8 +37,8 @@ x_axis = np.linspace(0, x_lim, ecdf_samples)
 
 #=============== Simulation ================
 # Generate Emprical Samples
-#arrival_evt = gen_poisson_process(arrival_rate, sample_num)
-arrival_evt = read_arrival_data(processfile)
+arrival_evt = gen_poisson_process(arrival_rate, sample_num)
+#arrival_evt = read_arrival_data(processfile)
 
 #=============== For DS Best ===============
 # Stimulate the server
@@ -53,7 +53,7 @@ y_empr_ds = ecdf1(x_axis);
 (atserver_evt, leave_evt) = run_D_FIFO_SS_server(budget, period, saving, service_rate, arrival_evt)
 response_time = np.subtract(leave_evt, arrival_evt)
 ecdf2 = sm.distributions.ECDF(response_time);
-y_empr_ps = ecdf2(x_axis);
+y_empr_ss = ecdf2(x_axis);
 
 # Generate Theoretical Curve
 y_theo = []
@@ -64,7 +64,6 @@ for item in x_axis:
 #mytitle = u'\u03BB=0.5, \u03BC=1.0'
 mytitle = "P=%.1f, Bw=%2d%%, %c=%.1f, %c=%.1f" % (period, int(bandwidth * 100), u'\u03BB', arrival_rate, u'\u03BC', service_rate)
 
-#plot_curves_with_same_x(x_axis, [y_theo], ['M/D/1 Theoretical'], xy_lim, mytitle)
-plot_curves_with_same_x(x_axis, [y_theo, y_empr_ds], ['M/D/1 Theoretical', 'M/D(DS)/1'], xy_lim, mytitle)
+plot_curves_with_same_x(x_axis, [y_theo, y_empr_ds, y_empr_ss], ['M/D/1 Theoretical', 'M/D(DS)/1', 'M/D(SS)/1 S=10.0'], xy_lim, mytitle)
 #plot_curves_with_same_x(x_axis, [y_theo, y_empr_ds, y_empr_ps], ['M/D/1 Theoretical', 'M/D(DS)/1', 'M/D(SS)/1 S=10.0'], xy_lim, mytitle)
 
