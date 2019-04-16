@@ -26,30 +26,47 @@ xy_lim = (x_lim, y_lim)
 x_bd = x_bd[0 : int(x_lim * N)]
 y_bd = y_bd[0 : int(x_lim * N)]
 
-#================= M/D(PS)/1 Simulation ==================
+#================= M/D(DS)/1 Simulation ==================
 sample_num   = 20000
 ecdf_samples = 10000
 x_axis = np.linspace(0, x_lim, ecdf_samples)
-arrival_evt = gen_poisson_process(arrival_rate, sample_num)
+#arrival_evt = gen_poisson_process(arrival_rate, sample_num)
+
+# Record the Data
+processfile  = './data/input/run01.csv'
+#write_arrival_data(processfile, arrival_evt)
+
+arrival_evt = read_arrival_data(processfile)
+
 (atserver_evt, leave_evt) = run_D_FIFO_DS_server(budget, period, service_rate, arrival_evt)
 response_time = np.subtract(leave_evt, arrival_evt)
-ecdf2 = sm.distributions.ECDF(response_time);
+ecdf2 = sm.distributions.ECDF(response_time)
+y_simu_ds = ecdf2(x_axis);
+
+#================= M/D(DS)/1 Empirical ==================
+scale = 100.0
+resultfile  = './data/res/run01.csv'
+response_time = read_arrival_data(resultfile)
+response_time = np.array(response_time)
+response_time = response_time / scale 
+ecdf2 = sm.distributions.ECDF(response_time)
 y_empr_ds = ecdf2(x_axis);
 
 #====================== Draw Figure ======================
-mytitle = "Response Time CDF: P=%.1f, Bw=%2d%%, %c=%.1f, %c=%.1f" % (period, int(bandwidth * 100), u'\u03BB', arrival_rate, u'\u03BC', service_rate)
+mytitle = "Response Time CDF: P=%.1f, W=%2d%%, %c=%.1f, %c=%.1f" % (period, int(bandwidth * 100), u'\u03BB', arrival_rate, u'\u03BC', service_rate)
 
 figwidth  = 6
 figheight = 5
 plt.figure(figsize=(figwidth, figheight))
-plt.plot(x_axis, y_empr_ds, linestyle='-', color='blue', drawstyle='steps', clip_on=False, linewidth=2.8)
+plt.plot(x_axis, y_simu_ds, linestyle='-', color='blue', drawstyle='steps', clip_on=False, linewidth=2.8)
 plt.plot(x_bd, y_bd, linestyle='--', color='orange', drawstyle='steps', clip_on=False, linewidth=2.0)
+plt.plot(x_axis, y_empr_ds, linestyle='--', color='red', drawstyle='steps', clip_on=False, linewidth=2.8)
 plt.xlabel('Normalized Response Time', fontsize = 12)
 plt.ylabel('Proportion', fontsize = 12)
 plt.title(mytitle, fontsize = 12)
 plt.xlim([0, x_lim])
 plt.ylim([0, y_lim])
-plt.legend(['M/D(DS)/1 Sim','B/D(DS)/1 approx N=%d' % (N)])
+plt.legend(['M/D(DS)/1 Sim','B/D(DS)/1 approx N=%d' % (N), 'M/D(DS)/1 Empr'])
 
 plt.show()
 
