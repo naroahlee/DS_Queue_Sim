@@ -13,9 +13,11 @@ import matplotlib.pyplot as plt
 arrival_rate = 0.4
 service_rate = 1.0
 bandwidth    = 0.6
-period       = 2.0
+period       = 1.0
 budget       = bandwidth * period
 N = 20
+
+runfile='run05'
 
 x_lim = 20.0
 y_lim = 1.0
@@ -33,7 +35,7 @@ x_axis = np.linspace(0, x_lim, ecdf_samples)
 #arrival_evt = gen_poisson_process(arrival_rate, sample_num)
 
 # Record the Data
-processfile  = './data/input/run01.csv'
+processfile  = './data/input/' + runfile + '.csv'
 #write_arrival_data(processfile, arrival_evt)
 
 arrival_evt = read_arrival_data(processfile)
@@ -45,7 +47,9 @@ y_simu_ds = ecdf2(x_axis);
 
 #================= M/D(DS)/1 Empirical ==================
 scale = 100.0
-resultfile  = './data/res/run01.csv'
+
+#resultfile  = './data/res/run01.csv'
+resultfile  = './data/res/' + runfile + '.csv'
 response_time = read_arrival_data(resultfile)
 response_time = np.array(response_time)
 response_time = response_time / scale 
