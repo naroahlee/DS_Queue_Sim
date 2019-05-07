@@ -14,11 +14,13 @@ def int_frac_ceil(N, D):
 		return ((N / D) + 1)
 
 # B/D/1 D>=1
-def get_BD1_V0_iter(B, P, p, d, W, time=100):
+def get_BD1_V0_iter(B, P, p, d, W, error_cap=0.001):
 	Vn = np.zeros((P + 1, W))
 	Vn[0][0] = 1.0
 
-	for k in range(0, time):
+	err_1norm = 1.0
+	iter_counter = 0
+	while(err_1norm > error_cap):
 		for n in range(1, P + 1):
 			if(n <= (P - B)):
 			# Compute Off-slot
@@ -44,12 +46,13 @@ def get_BD1_V0_iter(B, P, p, d, W, time=100):
 		# Normalize Vn[P]
 		Vn[P] = (Vn[P] / sum(Vn[P]))
 	
-		# Compute the 1-norm Distance
-		#err = Vn[P] - Vn[0]
-		#err_1norm = np.linalg.norm(err, ord=1)
-		#print err_1norm
+		err = Vn[P] - Vn[0]
+		err_1norm = np.linalg.norm(err, ord=1)
 
 		Vn[0] = Vn[P]
+		iter_counter += 1
+
+	print "Iteration Time: [%d], 1-norm Error [%f]" % (iter_counter, err_1norm)
 
 	return Vn[0]
 
@@ -249,10 +252,10 @@ def get_MDPS1_from_BDPS1(arrival_rate, service_rate, budget, period, N):
 
 	# Step 1. Get Virtual Waiting time distribution @ Start of a period (P + 0)
 	# Naroah: Using the iteration
-	VectorWidth = 200
-	IterTime    = 100
+	VectorWidth = 400
+	Error_cap   = 0.0001
 
-	V0 = get_BD1_V0_iter(B, P, p, d, VectorWidth, IterTime)
+	V0 = get_BD1_V0_iter(B, P, p, d, VectorWidth, Error_Cap)
 	Vn = get_BD1_PS_Vn  (B, P, p, d, V0)
 	R  = get_BD1_PS_R   (B, P, d, Vn)
 
@@ -277,10 +280,10 @@ def get_MDDS1_from_BDDS1(arrival_rate, service_rate, budget, period, N):
 
 	# Step 1. Get Virtual Waiting time distribution @ Start of a period (P + 0)
 	# Naroah: Using the iteration
-	VectorWidth = 200
-	IterTime    = 100
+	VectorWidth = 800
+	Error_cap   = 0.0001
 
-	V0 = get_BD1_V0_iter(B, P, p, d, VectorWidth, IterTime)
+	V0 = get_BD1_V0_iter(B, P, p, d, VectorWidth, Error_cap)
 	(nz_list, VU_T) = get_DS_VU_T_list(B, P, p, d, V0)
 	R  = get_BD1_DS_R_list(B, P, p, d, VU_T, nz_list)
 

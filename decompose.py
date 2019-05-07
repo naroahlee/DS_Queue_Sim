@@ -7,14 +7,21 @@ import statsmodels.api as sm
 from lib.utils           import *
 from lib.arrival_process import *
 from lib.server_model    import *
-from lib.analytics import get_MDDS1_from_BDDS1
 import matplotlib.pyplot as plt
-
-arrival_rate = 0.4
-sample_num   = 20000
 
 runfile = 'redis_sort'
 
 processfile  = './data/input/' + runfile + '.csv'
-arrival_evt = gen_poisson_process(arrival_rate, sample_num)
-write_arrival_data(processfile, arrival_evt)
+
+sep_list = [[], [], [], [], [], [], [], []]
+
+arrival_evt = read_arrival_data(processfile)
+
+for i in range(0, len(arrival_evt)):
+	sep_list[i % 8].append(arrival_evt[i])
+	
+
+for i in range(0, 8):
+	resfile  = './data/input/' + runfile + str(i) + '.csv'
+	write_arrival_data(resfile, sep_list[i])
+

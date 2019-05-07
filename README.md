@@ -41,3 +41,10 @@
 
 190401:
 	Can Approximate M/D(XS)/1 by using B/D(XS)/1
+
+190507:
+    The Iteration Time was deprecated, using "Error_Cap" instead.
+    TBD: How to determine M?
+ instead.
+    TBD: How to determine M?
+
