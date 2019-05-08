@@ -30,10 +30,13 @@ N = 20
 x_lim = 20.0
 y_lim = 1.0
 xy_lim = (x_lim, y_lim)
-
-figwidth  = 6
-figheight = 5
+# For paper 3.5x2.8 for PPT 5x4
+figwidth  = 3.5
+figheight = 2.8
 plt.figure(figsize=(figwidth, figheight))
+
+# For paper: Enable
+plt.subplots_adjust(left=0.18,top=0.95, bottom=0.18)
 
 sample_num   = 20000
 ecdf_samples = 10000
@@ -68,13 +71,15 @@ else:
 
 plt.xlabel('Normalized Response Time', fontsize = 12)
 plt.ylabel('Proportion', fontsize = 12)
-plt.title(mytitle, fontsize = 12)
+#plt.title(mytitle, fontsize = 12)
 plt.xlim([0, x_lim])
 plt.ylim([0, y_lim])
 if (True == ISVARBANDWIDTH):
 	plt.legend(['W=60%','W=80%', 'W=100%'])
+	plt.savefig('./figure/syn_cdf_simu.eps', format='eps', dpi=1000)
 else:
 	plt.legend(['P=1.0','P=2.0', 'P=4.0'])
+	plt.savefig('./figure/syn_cdf_simu_vp.eps', format='eps', dpi=1000)
 
 plt.show()
 

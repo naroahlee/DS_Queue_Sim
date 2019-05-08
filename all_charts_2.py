@@ -31,13 +31,10 @@ x_lim = 20.0
 y_lim = 1.0
 xy_lim = (x_lim, y_lim)
 
-# For paper 3.5x2.8 for PPT 5x4
-figwidth  = 3.5
-figheight = 2.8
+figwidth  = 2.5
+figheight = 2
 plt.figure(figsize=(figwidth, figheight))
-
-# For paper: Enable
-plt.subplots_adjust(left=0.18,top=0.95, bottom=0.18)
+plt.subplots_adjust(left=0.2)
 
 sample_num   = 20000
 ecdf_samples = 10000
@@ -61,7 +58,7 @@ for i in range(0, 3):
 	ecdf2 = sm.distributions.ECDF(response_time)
 	y_empr_ds = ecdf2(x_axis);
 
-	plt.plot(x_axis, y_empr_ds, linestyle=lstyles[i], color='black', drawstyle='steps', clip_on=False, linewidth=2.5)
+	plt.plot(x_axis, y_empr_ds, linestyle=lstyles[i], color='black', drawstyle='steps', clip_on=True, linewidth=1.5)
 
 # =============== Simu =============
 	processfile  = './data/input/' + runfile + '.csv'
@@ -71,7 +68,7 @@ for i in range(0, 3):
 	response_time = np.subtract(leave_evt, arrival_evt)
 	ecdf2 = sm.distributions.ECDF(response_time)
 	y_simu_ds = ecdf2(x_axis);
-	plt.plot(x_axis, y_simu_ds, linestyle=lstyles[i], color='blue', drawstyle='steps', clip_on=False, linewidth=2.2)
+	plt.plot(x_axis, y_simu_ds, linestyle=lstyles[i], color='blue', drawstyle='steps', clip_on=True, linewidth=1.5)
 
 # =============== Numerical =============
 	(x_bd, y_bd) = get_MDDS1_from_BDDS1(arrival_rate, 1.0, budget, period, N)
@@ -79,7 +76,7 @@ for i in range(0, 3):
 	x_bd = x_bd[0 : int(x_lim * N)]
 	y_bd = y_bd[0 : int(x_lim * N)]
 
-	plt.plot(x_bd, y_bd, linestyle=lstyles[i], color='red', drawstyle='steps', clip_on=False, linewidth=2.0)
+	plt.plot(x_bd, y_bd, linestyle=lstyles[i], color='red', drawstyle='steps', clip_on=True, linewidth=1.5)
 
 
 
@@ -89,15 +86,18 @@ if (True == ISVARBANDWIDTH):
 else:
 	mytitle = "Superposition CDF: W=%2d%%, %c=%.1f, %c=%.1f" % (int(bandwidth * 100), u'\u03BB', arrival_rate, u'\u03BC', service_rate)
 
-plt.xlabel('Normalized Response Time', fontsize = 12)
-plt.ylabel('Proportion', fontsize = 12)
+#plt.xlabel('Normalized Response Time', fontsize = 12)
+#plt.ylabel('Proportion', fontsize = 12)
 #plt.title(mytitle, fontsize = 12)
-plt.xlim([0, x_lim])
-plt.ylim([0, y_lim])
 
 if (True == ISVARBANDWIDTH):
-	plt.savefig('./figure/syn_cdf_all.eps', format='eps', dpi=1000)
+	plt.xlim([1, 5])
+	plt.ylim([0.8, 1.0])
+	plt.savefig('./figure/syn_cdf_all_zoom.eps', format='eps', dpi=1000)
 else:
-	plt.savefig('./figure/syn_cdf_all_vp.eps', format='eps', dpi=1000)
+	plt.xlim([3, 5])
+	plt.ylim([0.8, 0.95])
+	plt.savefig('./figure/syn_cdf_all_zoom_vp.eps', format='eps', dpi=1000)
+	
 plt.show()
 
