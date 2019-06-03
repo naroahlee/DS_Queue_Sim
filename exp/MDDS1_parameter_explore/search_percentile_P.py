@@ -71,10 +71,10 @@ if (True == ISCREATENEW):
 			x = search_norm_xpercent_latency(arrival_rate, bandwidth, period, percentile, N)
 			my90th.append(x)
 		my90th_lists.append(my90th)
-	with open('constWsweepP.dat', 'wb') as myfile:
+	with open('./data/res/constWsweepP.dat', 'wb') as myfile:
 		pickle.dump(my90th_lists, myfile)
 else:
-	with open('constWsweepP.dat', 'rb') as myfile:
+	with open('./data/res/constWsweepP.dat', 'rb') as myfile:
 		my90th_lists = pickle.load(myfile)
 
 

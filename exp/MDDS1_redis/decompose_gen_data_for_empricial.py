@@ -1,5 +1,7 @@
 #!/usr/bin/python
-# Compare Exponential CDF between Theoretical and Emprical
+# We will use 8 clients for the emprical experiments.
+# So we need to decompse the one Poisson Stream
+# to 8 independent stream
 import sys
 import math
 import numpy as np

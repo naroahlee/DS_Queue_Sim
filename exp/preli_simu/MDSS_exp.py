@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# M/D(SS)/1 Server
+# M/D(SS)/1 Server: A Saving Server. which has been deprecated.
 import sys
 import math
 import numpy as np

@@ -7,3 +7,7 @@ clean:
 #	rm -rf ./data/res/*
 #	rm -rf ./data/input/*
 	
+push: clean
+	git add --all
+	git commit -m "${COMM}"
+	git push origin master

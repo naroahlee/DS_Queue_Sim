@@ -71,10 +71,10 @@ if (True == ISCREATENEW):
 			x = search_norm_xpercent_latency(arrival_rate, bandwidth, period, percentile, N)
 			my90th.append(x)
 		my90th_lists.append(my90th)
-	with open('constPsweepW.dat', 'wb') as myfile:
+	with open('./data/res/constPsweepW.dat', 'wb') as myfile:
 		pickle.dump(my90th_lists, myfile)
 else:
-	with open('constPsweepW.dat', 'rb') as myfile:
+	with open('./data/res/constPsweepW.dat', 'rb') as myfile:
 		my90th_lists = pickle.load(myfile)
 
 test_plot(bandwidths, my90th_lists)

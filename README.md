@@ -1,3 +1,9 @@
+Usage:
+	For experiments: Copy the file to current directory (Root) and execute
+
+For other examples:
+
+
 181126: Build the first Exponential CDF comparison
 181127: 
 	Add M/D/1 theoretical control parameter experiment in ./src
@@ -45,6 +51,8 @@
 190507:
     The Iteration Time was deprecated, using "Error_Cap" instead.
     TBD: How to determine M?
- instead.
-    TBD: How to determine M?
 
+190603:
+	After Submitting to RTSS'19
+	Reorganize
+    Starting M/G/1 and M/G(DS)/1 model.

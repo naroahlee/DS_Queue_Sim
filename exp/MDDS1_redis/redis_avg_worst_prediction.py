@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 GEN_NEW_DATA = False
 # Real Value
-durarrival_rate_real = 0.04
+arrival_rate_real = 0.04
 service_dur_real  = 8.6
 period_real       = 10.0
 bandwidth         = 0.6
