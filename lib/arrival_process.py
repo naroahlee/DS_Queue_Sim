@@ -32,3 +32,13 @@ def gen_bernoulli_process(p, sample_num):
 		arrival_evt.append(cur_time)
 
 	return arrival_evt
+
+def gen_binary_distribution_execution(a, b, pa, sample_num):
+	alldata = np.random.uniform(0, 100, sample_num)
+	for i in range(0, len(alldata)):
+		if (alldata[i] < pa * 100.0):
+			alldata[i] = a
+		else:
+			alldata[i] = b
+	return alldata
+

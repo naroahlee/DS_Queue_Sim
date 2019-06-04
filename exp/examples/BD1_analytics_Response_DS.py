@@ -13,7 +13,7 @@ from lib.utils           import *
 from lib.arrival_process import *
 from lib.server_model    import *
 from lib.analytics import get_BD1_V0_iter
-from lib.analytics import get_DS_VU_T_list
+from lib.analytics import get_BD1_DS_VU_T_list
 from lib.analytics import get_BD1_DS_R_list
 import matplotlib.pyplot as plt
 
@@ -37,7 +37,7 @@ V0 = get_BD1_V0_iter(budget, period, p, service_dur, VectorWidth, Error_cap)
 # Step 2. Get VU|T
 #VU_T = get_DS_VU_T(budget, period, p, V0)
 
-(nz_list, VU_T) = get_DS_VU_T_list(budget, period, p, service_dur, V0)
+(nz_list, VU_T) = get_BD1_DS_VU_T_list(budget, period, p, service_dur, V0)
 
 # Step 3. Get R
 R  = get_BD1_DS_R_list(budget, period, p, service_dur, VU_T, nz_list)

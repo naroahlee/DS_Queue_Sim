@@ -13,7 +13,7 @@ def int_frac_ceil(N, D):
 	else:
 		return ((N / D) + 1)
 
-# B/D/1 D>=1
+# B/D(XS)/1 D>=1
 def get_BD1_V0_iter(B, P, p, d, W, error_cap=0.001):
 	Vn = np.zeros((P + 1, W))
 	Vn[0][0] = 1.0
@@ -56,6 +56,62 @@ def get_BD1_V0_iter(B, P, p, d, W, error_cap=0.001):
 
 	return Vn[0]
 
+# B/G(XS)/1 
+# exe_dist is a list of tuple (d, q): we got probablity q of having an duration d
+def get_BG1_V0_iter(B, P, p, exe_dist, W, error_cap=0.001):
+
+	qsum = 0.0	
+	for (d, q) in exe_dist:
+		assert(d > 0)
+		qsum += q
+	assert(abs(1.0 - qsum) <= 0.001)
+		
+	# Algorithm Start
+	Vn = np.zeros((P + 1, W))
+	Vn[0][0] = 1.0
+
+	err_1norm = 1.0
+	iter_counter = 0
+	while(err_1norm > error_cap):
+		for n in range(0, P):
+			if(n < (P - B)):
+			# Compute Off-slot
+				for i in range(0, W):
+					Vn[n+1][i] += Vn[n][i] * (1.0-p)         # No arrival
+					for (d, q) in exe_dist:
+						if (i+d < W):
+							Vn[n+1][i+d] += Vn[n][i] * p * q # Arrival + Condition
+			else:
+			# Compute On-slot
+				# Process i == 0 
+				Vn[n+1][0] += Vn[n][0] * (1.0-p)         # No arrival
+				for (d, q) in exe_dist:
+					if (d - 1 < W):
+						Vn[n+1][d-1] += Vn[n][0] * p * q # Arrival + Condition
+				
+				# Process i >= 1	
+				for i in range(1, W):
+					Vn[n+1][i-1] +=  Vn[n][i] * (1.0-p)  # No arrival
+					for (d, q) in exe_dist:
+						if (i+d-1 < W):
+							Vn[n+1][i+d-1] += Vn[n][i] * p * q # Arrival + Condition
+		# end for n=0toP-1
+
+		# Normalize Vn[P]
+		Vn[P] = (Vn[P] / sum(Vn[P]))
+	
+		err = Vn[P] - Vn[0]
+		err_1norm = np.linalg.norm(err, ord=1)
+
+		temp = Vn[P]
+		Vn = np.zeros((P + 1, W))
+		Vn[0] = temp
+		iter_counter += 1
+	# end while(check error)
+
+	print "Iteration Time: [%d], 1-norm Error [%f]" % (iter_counter, err_1norm)
+
+	return Vn[0]
 
 # ===================== For Periodic Server ===========================
 # to determine response time
@@ -144,7 +200,7 @@ def f_DS(l, m, n, B, P, d):
 # A list contains P lists to identify which joint probabality is no zero
 # For Each of the P lists:
 #     Contains a tuple of (V=l, U=m) to identify the one with no zero probablity
-def get_DS_VU_T_list(B, P, p, d, V0):
+def get_BD1_DS_VU_T_list(B, P, p, d, V0):
 	nz_list = []
 
 	# initalization
@@ -225,6 +281,92 @@ def get_DS_VU_T_list(B, P, p, d, V0):
 
 	return (nz_list, VU_T) 
 
+# The new method for getting the VU_T with a general distribution G
+# Return:
+# A list contains P lists to identify which joint probabality is no zero
+# For Each of the P lists:
+#     Contains a tuple of (V=l, U=m) to identify the one with no zero probablity
+def get_BG1_DS_VU_T_list(B, P, p, exe_dist, V0):
+	nz_list = []
+
+	# initalization
+	W = len(V0)
+	VU_T = np.zeros((W, B + 1, P))
+
+
+	templist = []
+	# fill the initial number V0
+	for l in range(0, W):
+		VU_T[l][B][0] = V0[l]
+		templist.append( (l, B) )
+
+	nz_list.append(templist)
+	
+	for n in range(0, P - 1):
+		templist = []
+		# For each Iteration, reset the checkmark
+		checkchart = np.zeros((W, B + 1))
+
+		for (l, m) in nz_list[n]:
+			#==================== (m > 0) We have no budget =====================
+			if(m > 0):
+				if(l > 0):
+					# We have budget and we have things pending
+					# If nothing incoming, use budget for already pending task
+					VU_T[l-1  ][m-1][n+1] += VU_T[l][m][n] * (1 - p)
+					if(0 == checkchart[l-1  ][m-1]):
+						checkchart[l-1  ][m-1] = 1
+						templist.append( (l-1  ,m-1) )
+
+					# If something incoming, check all the possible duration 
+					# and use budget for already pending task
+					for (d, q) in exe_dist:
+						if(l+d-1 < W):	 # Sacrifice some tail proportion
+							VU_T[l+d-1][m-1][n+1] += VU_T[l][m][n] * p * q
+							if(0 == checkchart[l+d-1][m-1]):
+								checkchart[l+d-1][m-1] = 1
+								templist.append( (l+d-1,m-1) )
+
+				else: #(l == 0)
+					# If we have budget and not pending task
+					# if nothing is incoming, system idle
+					VU_T[l    ][m  ][n+1] += VU_T[l][m][n] * (1 - p)
+					if(0 == checkchart[l    ][m  ]):
+						checkchart[l    ][m  ] = 1
+						templist.append( (l    ,m  ) )
+
+					# If something incoming, use budget for current incoming task 
+					for (d, q) in exe_dist:
+						if(l+d-1 < W):
+							VU_T[l+d-1][m-1][n+1] += VU_T[l][m][n] * p * q
+							if(0 == checkchart[l+d-1][m-1]):
+								checkchart[l+d-1][m-1] = 1
+								templist.append( (l+d-1,m-1) )
+
+			#==================== (m = 0) We have no budget =====================
+			else:
+				# Regardless l == 0 or l > 0, we can only accumulate the thing
+				# Nothing is incoming
+				VU_T[l    ][m  ][n+1] += VU_T[l][m][n] * (1 - p)
+				if(0 == checkchart[l    ][m  ]):
+					checkchart[l    ][m  ] = 1
+					templist.append( (l    ,m  ) )
+
+				# If something incoming, we can only accumulate
+				for (d, q) in exe_dist:
+					if(l+d < W):
+						VU_T[l+d  ][m  ][n+1] += VU_T[l][m][n] * p * q
+						if(0 == checkchart[l+d  ][m  ]):
+							checkchart[l+d  ][m  ] = 1
+							templist.append( (l+d,m  ) )
+			# End of If m>0
+		# End of for(l ,m)
+		
+		nz_list.append(templist)
+	# End of for n
+
+	return (nz_list, VU_T) 
+
 # New method for DS, which can handle d >= 2
 def get_BD1_DS_R_list(B, P, p, d, VU_T, nz_list):
 	(W, B1, P1) = VU_T.shape
@@ -238,6 +380,23 @@ def get_BD1_DS_R_list(B, P, p, d, VU_T, nz_list):
 
 	return R
 
+def get_BG1_DS_R_list(B, P, p, exe_dist, VU_T, nz_list):
+
+	max_d = 0
+	for (d, q) in exe_dist:
+		if (d > max_d):
+			max_d = d	
+
+	(W, B1, P1) = VU_T.shape
+	R = np.zeros(((W + max_d) / B + 1) * P)
+
+	for n in range(0, P):
+		for (l, m) in nz_list[n]:
+			for (d, q) in exe_dist:
+				k = f_DS(l, m, n, B, P, d)
+				R[k] += (1.0 / P) * VU_T[l][m][n] * q
+
+	return R
 
 # ==================== Finally: The Top-layer API ===================
 # ============= Using B/D(XS)/1 to Approximate M/D(XS)/1 ============
@@ -284,7 +443,7 @@ def get_MDDS1_from_BDDS1(arrival_rate, service_rate, budget, period, N):
 	Error_cap   = 0.0001
 
 	V0 = get_BD1_V0_iter(B, P, p, d, VectorWidth, Error_cap)
-	(nz_list, VU_T) = get_DS_VU_T_list(B, P, p, d, V0)
+	(nz_list, VU_T) = get_BD1_DS_VU_T_list(B, P, p, d, V0)
 	R  = get_BD1_DS_R_list(B, P, p, d, VU_T, nz_list)
 
 	y_cdf = []

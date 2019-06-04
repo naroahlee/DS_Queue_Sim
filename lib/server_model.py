@@ -1,11 +1,15 @@
 #!/usr/bin/python
-# Server Models
-# Now we have three model
-# 1. Deterministic FIFO Model
-# 2. Deterministic FIFO Deferrable Server Model
-# 3. Deterministic FIFO Periodic   Server Model
+# Server Models for simulation
+# Now we have four models
+# 1. Deterministic FIFO Model					( /D/1)
+# 2. Deterministic FIFO Deferrable Server Model ( /D(DS)/1)
+# 3. Deterministic FIFO Periodic   Server Model ( /D(PS)/1)
 #    Note, A highest priority periodic server with offset 
-#    of P-B can be the worst case senario of a schedulable corresponding Deferrable Server in terms of total waiting time 
+#    of P-B can have the same virtual waiting time distribution
+#    as a Deferrable Server at the start of each server period
+# 4. Deterministic FIFO Saving     Server Model ( /D(SS)/1 Deprecated)
+# 5. General       FIFO Model					( /G/1)
+# 6. General       FIFO Deferrable Server Model ( /G(DS)/1)
 # Stimulate the server with an arrival_evt;
 # We can get when each job starts getting service
 #    and when each job leaves
@@ -443,6 +447,86 @@ def run_D_FIFO_PS_server_DT(budget, period, service_dur, arrival_evt):
 
 					# Now the last potion of service_remain is less than budget:
 					cur_time += service_remain
+
+				leave_evt.append(cur_time);
+				index += 1
+			state = 0
+
+	return (atserver_evt, leave_evt)
+
+#=================== /G/1 Server ========================
+# As a general sever, it should use the 
+# Execution Duration for each job
+# The service rate is unknown.
+def run_G_FIFO_server(arrival_evt, execute_dur):
+	atserver_evt = []
+	leave_evt    = []
+
+	index = 0
+	cur_time = 0.0;
+	state = 0; # IDLE
+	while (index < len(arrival_evt)):
+		if(0 == state):
+			cur_time = arrival_evt[index]
+			state = 1 # Active
+		else: # Active
+			while((index < len(arrival_evt)) and (cur_time >= arrival_evt[index])):
+				atserver_evt.append(cur_time)
+				# Pick up the execution time from list
+				cur_time += execute_dur[index]
+				leave_evt.append(cur_time)
+				index += 1
+			state = 0
+
+	return (atserver_evt, leave_evt)
+
+#=================== /G(DS)/1 Server ========================
+def run_G_FIFO_DS_server(budget, period, execute_dur, arrival_evt):
+
+	assert(budget <= period)
+	assert(len(execute_dur) == len(arrival_evt))
+
+	atserver_evt = []
+	leave_evt    = []
+
+	index = 0
+
+	state = 0; # IDLE
+	cur_time = 0.0;
+	remain_budget = budget;
+	next_period   = period;
+	while (index < len(arrival_evt)):
+		if(0 == state): # IDLE
+			cur_time = arrival_evt[index]
+			(remain_budget, next_period) = update_DS_after_idle(budget, period, remain_budget, next_period, cur_time)
+			state = 1 
+		if(1 == state): # Execution
+			while((index < len(arrival_evt)) and (cur_time >= arrival_evt[index])):
+				atserver_evt.append(cur_time)
+		
+				# General Execution Time: Fetch Data From List
+				service_dur = execute_dur[index]
+
+				if(remain_budget >= service_dur): # If old period can still handle
+					cur_time += service_dur
+					remain_budget -= service_dur
+					# next_period = next_period   # next_period unchanged
+				else:
+					# First, burn up all the remain debris
+					cur_time = next_period	# Uneven Budget Replenishment
+					next_period += period
+					service_remain = service_dur - remain_budget
+					
+					# Use Multiple whole DS period for serving
+					# Yes, you can directly compute it if you want
+					while(service_remain > budget): 
+						cur_time = next_period
+						next_period += period
+						service_remain -= budget
+
+					# Now the last potion of service_remain is less than budget:
+					cur_time += service_remain
+					remain_budget = budget - service_remain
 
 				leave_evt.append(cur_time);
 				index += 1
