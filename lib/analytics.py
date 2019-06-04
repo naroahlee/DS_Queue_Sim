@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import math
 import numpy as np
 import copy
 from scipy.special import comb
@@ -398,6 +399,26 @@ def get_BG1_DS_R_list(B, P, p, exe_dist, VU_T, nz_list):
 
 	return R
 
+def get_dist_from_exec(execution_time, N):
+	sample_num = len(execution_time)
+	d = np.mean(execution_time)
+	w_slot = d / N
+	bins = np.zeros(2 * N, dtype=int)
+	for item in execution_time:
+		k = int(math.floor((item + w_slot / 2) / w_slot))
+		if (k >= 2 * N):
+			k = 2 * N - 1
+		bins[k] += 1
+
+	exe_dist = []
+	for index in range(0, 2 * N):
+		if(0 != bins[index]):
+			exe_dist.append( (index, float(bins[index]) / sample_num) )
+	
+	return exe_dist
+	
+
+
 # ==================== Finally: The Top-layer API ===================
 # ============= Using B/D(XS)/1 to Approximate M/D(XS)/1 ============
 def get_MDPS1_from_BDPS1(arrival_rate, service_rate, budget, period, N):
@@ -445,6 +466,35 @@ def get_MDDS1_from_BDDS1(arrival_rate, service_rate, budget, period, N):
 	V0 = get_BD1_V0_iter(B, P, p, d, VectorWidth, Error_cap)
 	(nz_list, VU_T) = get_BD1_DS_VU_T_list(B, P, p, d, V0)
 	R  = get_BD1_DS_R_list(B, P, p, d, VU_T, nz_list)
+
+	y_cdf = []
+	y_cdf.append(R[0])
+	for i in range(1, len(R)):
+		new_item = y_cdf[i - 1] + R[i]
+		y_cdf.append(new_item)
+	
+	x_tick = np.array(range(0, len(R))) * 1.0 / N
+		
+	return (x_tick, y_cdf)
+
+# =============== MGDS1 from BGDS1 ==============
+# Accept Normailized and Discrtized Distribution exe_dist
+def get_MGDS1_from_BGDS1(arrival_rate, exe_dist, budget, period, N):
+	p = arrival_rate / N
+	P = int(period * N)
+	B = int(budget * N)
+
+	print p,P,B
+	print exe_dist
+
+	# Step 1. Get Virtual Waiting time distribution @ Start of a period (P + 0)
+	# Naroah: Using the iteration
+	VectorWidth = 800
+	Error_cap   = 0.0001
+
+	V0 = get_BG1_V0_iter(B, P, p, exe_dist, VectorWidth, Error_cap)
+	(nz_list, VU_T) = get_BG1_DS_VU_T_list(B, P, p, exe_dist, V0)
+	R  = get_BG1_DS_R_list(B, P, p, exe_dist, VU_T, nz_list)
 
 	y_cdf = []
 	y_cdf.append(R[0])
@@ -629,4 +679,5 @@ def get_BD1_V0(B, P, prob, J=4):
 		pi_j = np.concatenate((pi_j, [new_item]))
 		
 	return pi_j
+
 

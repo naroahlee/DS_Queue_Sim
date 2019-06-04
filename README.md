@@ -56,3 +56,7 @@ For other examples:
 	After Submitting to RTSS'19
 	Reorganize
     Starting M/G/1 and M/G(DS)/1 model.
+
+190604:
+	M/G(DS)/1 first model passed.
+	TBD: Test against HSET query
