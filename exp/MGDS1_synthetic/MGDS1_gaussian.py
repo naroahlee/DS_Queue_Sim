@@ -9,6 +9,7 @@ from lib.arrival_process import *
 from lib.server_model    import *
 from lib.md1_cdf import MD1_response_CDF
 from lib.analytics import get_dist_from_exec
+from lib.analytics import get_MDDS1_from_BDDS1
 from lib.analytics import get_MGDS1_from_BGDS1
 
 # ================Parameters ===============
@@ -55,28 +56,44 @@ response_time = np.subtract(leave_evt, arrival_evt)
 ecdf = sm.distributions.ECDF(response_time)
 y_simu = ecdf(x_axis);
 
+#=============== Simulation ================
+# Generate Emprical Samples
+# Stimulate the server
+(atserver_evt, leave_evt) = run_G_FIFO_server(arrival_evt, execute_dur)
+response_time = np.subtract(leave_evt, arrival_evt)
+ecdf = sm.distributions.ECDF(response_time)
+y_simu2 = ecdf(x_axis);
 
-#=============== Analytical ===============
+
+#=============== Analytical: M/G(DS)/1 ===============
 # Step 1. Get exe_dist
 N_arr = 20
 N_exe = 20
 exe_dist = get_dist_from_exec(execute_dur, N_exe, N_arr)
 (x_bg, y_bg) = get_MGDS1_from_BGDS1(arrival_rate, exe_dist, budget, period, N_arr)
 
-#V0 = get_BG1_V0_iter(budget, period, succeed_rate, exe_dist, VectorWidth, Error_cap)
-#(nz_list, VU_T) = get_BG1_DS_VU_T_list(budget, period, succeed_rate, exe_dist, V0)
-#R = get_BG1_DS_R_list(budget, period, succeed_rate, exe_dist, VU_T, nz_list)
+#=============== Analytical: M/D(DS)/1 ===============
+N_arr = 20
+(x_bd, y_bd) = get_MDDS1_from_BDDS1(arrival_rate, 1.0, budget, period, N_arr)
+
 if (True == NEWARRIVAL):
 	write_arrival_data(processfile, arrival_evt)
 	write_arrival_data(executefile, execute_dur)
 
 
 # ============= Draw Figure =============== 
+figwidth  = 5
+figheight = 4
+plt.figure(figsize=(figwidth, figheight))
+plt.plot(x_axis, y_simu2, linestyle='-', color='black', drawstyle='steps', clip_on=True, linewidth=2.0)
 plt.plot(x_axis, y_simu, linestyle='-', color='blue', drawstyle='steps', clip_on=True, linewidth=2.0)
 plt.plot(x_bg  , y_bg  , linestyle='--', color='red', drawstyle='steps', clip_on=True, linewidth=2.0)
-plt.xlabel('Response Time', fontsize = 12)
+plt.plot(x_bd  , y_bd  , linestyle='--', color='green', drawstyle='steps', clip_on=True, linewidth=2.0)
+plt.xlabel('Normalized Response Time', fontsize = 12)
 plt.ylabel('Proportion', fontsize = 12)
-plt.xlim([0, x_lim])
+mytitle = '%c=%3.2f, d=%.1f, %c=%.1f P=%.1f, B=%.1f' % (u'\u03BB', arrival_rate, g_mean, u'\u03C3', g_sqvar, period, budget)
+plt.title(mytitle)
+plt.xlim([0, 15])
 plt.ylim([0, y_lim])
-plt.legend(['Simulation', 'Numerical'])
+plt.legend(['M/G/1 Simu', 'M/G(DS)/1 Simu', 'M/G(DS)/1 Numer', 'M/D(DS)/1 Numer'])
 plt.show()
