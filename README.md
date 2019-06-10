@@ -60,3 +60,7 @@ For other examples:
 190604:
 	M/G(DS)/1 first model passed.
 	TBD: Test against HSET query
+
+190610:
+	Prof. Lu: Bin# v.s. computational time
+			  Another worst case estimation: Bin 
