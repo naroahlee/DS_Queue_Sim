@@ -423,6 +423,30 @@ def get_dist_from_exec(execution_time, N_exe, N_arr):
 			exe_dist.append( (index*weight, float(bins[index]) / sample_num) )
 	
 	return exe_dist
+
+def get_dist_from_exec_with_d(execution_time, d, N_exe, N_arr):
+	assert(N_arr/N_exe == int(N_arr/N_exe))
+
+	weight = N_arr/N_exe
+	w_slot = d / N_exe
+
+	sample_num = len(execution_time)
+	d = np.mean(execution_time)
+	bins = np.zeros(2 * N_exe, dtype=int)
+	for item in execution_time:
+		k = int(math.floor((item + w_slot / 2) / w_slot))
+		if   (k <= 0):
+			k = 1
+		elif (k >= 2 * N_exe):
+			k = 2 * N_exe - 1
+		bins[k] += 1
+
+	exe_dist = []
+	for index in range(1, 2 * N_exe):
+		if(0 != bins[index]):
+			exe_dist.append( (index*weight, float(bins[index]) / sample_num) )
+	
+	return exe_dist
 	
 # Using Worst
 def get_dist_from_exec2(execution_time, N_exe, N_arr):

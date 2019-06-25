@@ -64,3 +64,9 @@ For other examples:
 190610:
 	Prof. Lu: Bin# v.s. computational time
 			  Another worst case estimation: Bin 
+
+190620:
+	Redis Sort Random Length. M/G(DS)/1
+	List Length: 35000
+    Sort M-Length: 15000 * Gaussian(1.0, 0.3)
+    Samples: 10000
